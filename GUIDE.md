@@ -51,7 +51,8 @@ third-party PaaS is involved.
    GitHub
    ├── repo  vipin-surfly/webfuse-deepgram (public — Webfuse imports from it)
    ├── Pages publishes site/ on every push to main (.github/workflows/pages.yml)
-   └── extension/ subpath → installed on the Webfuse Space
+   └── extension/ folder → mirrored to the `extension` branch
+       (.github/workflows/extension-branch.yml) → installed on the Space
 
    Webfuse
    ├── Space       "Deepgram POC" (meeting) — proxy config: apps + extensions
@@ -66,7 +67,7 @@ third-party PaaS is involved.
 | `site/index.html` | GitHub Pages (or `server.js` locally) | The whole demo page — one file, no frameworks, no CDN |
 | `server.js` | your machine / any host | Zero-dependency server: static site + `/api/token` (grants, or raw-key fallback) |
 | `extension/` | Webfuse Space | Floating caption panel on every page in every session of the Space |
-| `vipin-surfly/webfuse-deepgram` | GitHub (public) | Source of truth; Webfuse imports the extension from it; Pages publishes the site |
+| `vipin-surfly/webfuse-deepgram` | GitHub (public) | Source of truth; Pages publishes the site; the `extension` branch is what the Space installs |
 | Deepgram | cloud | `/v1/listen` streaming STT (Nova-3), `/v1/listen` REST (files), `/v1/auth/grant` (tokens) |
 | Webfuse | cloud | Spaces (proxy config), Sessions (shared co-browsing), Extensions |
 
@@ -192,7 +193,8 @@ webfuse-deepgram/
 │   ├── popup.html               panel UI
 │   ├── popup.js                 mic → AudioWorklet → Deepgram WS → captions
 │   └── README.md               extension-specific setup
-├── .github/workflows/pages.yml  publishes site/ to GitHub Pages
+├── .github/workflows/            pages.yml (publishes site/ to Pages),
+│                                 extension-branch.yml (mirrors extension/ → extension branch)
 ├── package.json                 scripts: start (server.js)
 ├── .env                         DEEPGRAM_API_KEY (never commit)
 ├── README.md                    quick start
@@ -231,9 +233,13 @@ transcription work fully locally. (`localhost` is a secure context, so
   Deepgram key (kept in localStorage, sent only to `api.deepgram.com`).
 - **Extension on a Webfuse Space**: in Webfuse Studio, install the
   extension **from the GitHub repo** (`vipin-surfly/webfuse-deepgram`,
-  subpath `extension/`), or zip `extension/` and upload it. Webfuse's
-  GitHub importer requires a **public** repo — keep it public, and keep
-  every secret out of it (`.env` is gitignored; scan before pushing).
+  ref `extension` — a workflow mirrors the `extension/` folder to that
+  branch on every push, because the importer needs `manifest.json` at the
+  ref's root), or zip `extension/` and upload it. Webfuse's GitHub
+  importer requires a **public** repo — keep it public, and keep every
+  secret out of it (`.env` is gitignored; scan before pushing). After
+  changing `extension/`, re-install/update the extension in Studio to
+  pick up the new version.
 - **Token endpoint (optional, grant mode)**: host `server.js` on any
   HTTPS host with `DEEPGRAM_API_KEY` in its environment, then set
   `TOKEN_URL` on the extension (and point the page at it by serving it

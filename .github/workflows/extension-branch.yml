@@ -1,0 +1,28 @@
+name: Sync extension branch
+
+# Mirrors extension/ (at repo root) to the `extension` branch, which is what
+# the Webfuse Space installs from (ref: extension). Webfuse's importer needs
+# manifest.json at the root of the ref, hence the subtree split.
+
+on:
+  push:
+    branches: [main]
+    paths: ['extension/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Mirror extension/ to the extension branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git subtree split -P extension -b extension-sync
+          git push origin refs/heads/extension-sync:refs/heads/extension --force

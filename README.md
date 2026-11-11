@@ -34,9 +34,10 @@ The repo is the deployment:
   (`.github/workflows/pages.yml`). On Pages the page runs in POC mode:
   click the badge to paste a Deepgram key (kept in the browser's
   localStorage).
-- **Webfuse extension** — install it on a Space from this repository:
-  repo `vipin-surfly/webfuse-deepgram`, subpath `extension/`. Webfuse's
-  importer requires the repo to be **public**.
+- **Webfuse extension** — installed on a Space from this repository's
+  `extension` branch (the `extension/` folder is mirrored there
+  automatically on every push). Webfuse's importer requires the repo to be
+  **public** and `manifest.json` at the ref's root — hence the branch.
 - **Token endpoint** (optional, for grant mode) — host `server.js`
   anywhere with HTTPS and set `DEEPGRAM_API_KEY` in its environment.
 
@@ -75,7 +76,7 @@ webfuse-deepgram/
 │   ├── background.js          floats the detached popup
 │   ├── popup.html/js          caption panel (mic → AudioWorklet → Deepgram WS)
 │   └── README.md
-├── .github/workflows/pages.yml  publishes site/ to GitHub Pages
+├── .github/workflows/         pages.yml (publishes site/), extension-branch.yml (mirrors extension/ → extension branch)
 ├── .env                       DEEPGRAM_API_KEY (never commit)
 └── GUIDE.md                   the complete guide
 ```
