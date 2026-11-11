@@ -41,13 +41,16 @@ extension → settings):
 ## 2. Install on a Webfuse Space
 
 The extension lives at `extension/` in
-[github.com/vipin-surfly/webfuse-deepgram](https://github.com/vipin-surfly/webfuse-deepgram).
+[github.com/vipin-surfly/webfuse-deepgram](https://github.com/vipin-surfly/webfuse-deepgram);
+a workflow mirrors that folder to the repo's `extension` branch, which is
+what Webfuse installs from (the importer needs `manifest.json` at the ref's
+root).
 
 1. Create a Space (Meeting or Shared if several people should join the
    same session).
 2. In Webfuse Studio, install the extension **from the GitHub repository**
-   (repo `vipin-surfly/webfuse-deepgram`, subpath `extension/`), or zip
-   this folder and upload it.
+   (repo `vipin-surfly/webfuse-deepgram`, ref `extension`), or zip this
+   folder and upload it.
 3. Configure the credential as above.
 4. Open a session on the Space and browse anywhere — the caption panel
    floats over every page.
