@@ -1,0 +1,10 @@
+{
+  "name": "webfuse-deepgram",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Deepgram live captions for Webfuse sessions — demo site (GitHub Pages) + local token server + Webfuse extension",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
