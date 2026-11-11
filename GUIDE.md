@@ -10,12 +10,13 @@ and how to troubleshoot it.
 
 A POC that puts **real-time AI captions anywhere a Webfuse session goes**:
 
-1. **The demo page** (`site/index.html`, published to GitHub Pages) —
-   two Deepgram speech-to-text demos that run in any browser:
-   - *Live microphone captions* — streaming WebSocket transcription with
-     interim results, powered by Nova-3.
-   - *File transcription* — drag any audio/video file onto the page and get
-     its full transcript (pre-recorded REST API).
+1. **The pages** (published to GitHub Pages):
+   - `site/index.html` — the **landing / session startup page**: the agent
+     anatomy pitch — ears + mouth (Deepgram) and eyes + hands (Webfuse)
+     around your LLM, and one turn of the conversation. No JS, one screen.
+   - `site/demo.html` — the **hands-on demo**: live microphone captions
+     (streaming WebSocket, interim results, Nova-3) and file
+     transcription (pre-recorded REST), running in any browser.
 2. **The Webfuse extension** (`extension/`) — the same caption engine as a
    floating panel injected into **every page of every session** of a
    Webfuse Space. The visitor opens a session link, clicks once, and talks;
@@ -185,7 +186,8 @@ extension — the badge flips to green with no code changes.
 
 ```
 webfuse-deepgram/
-├── site/index.html              the whole demo page (single file)
+├── site/index.html              landing page — the agent anatomy pitch (startup page)
+├── site/demo.html               hands-on demo: live mic captions + file transcription
 ├── server.js                    zero-dep local server: static + /api/token
 ├── extension/                   Webfuse extension
 │   ├── manifest.json            manifest v3 + env: DEEPGRAM_API_KEY, TOKEN_URL

@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live captions — Deepgram × Webfuse</title>
+  <title>An agent with eyes, hands, ears, and a mouth — Webfuse × Deepgram</title>
+  <meta name="description" content="Connect any LLM to a Webfuse session and it gets a browser body — eyes and hands on any website — with Deepgram for ears and a mouth.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230d1220'/><path d='M9 12h2v9H9zM14 8h2v17h-2zM19 13h2v7h-2zM24 11h2v11h-2z' fill='%232ee6a8'/></svg>">
   <style>
     :root {
@@ -13,12 +14,10 @@
       --border: #1e2a3f;
       --text: #e8edf5;
       --text-soft: #8b96a8;
-      --accent: #2ee6a8;
-      --accent-dim: #1c7a5c;
+      --green: #2ee6a8;
+      --green-dim: #1c7a5c;
       --blue: #4da3ff;
-      --err: #ff6b6b;
-      --amber: #ffc65c;
-      --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+      --blue-dim: #1f4d75;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
@@ -26,177 +25,145 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif;
       background:
         radial-gradient(1100px 500px at 85% -10%, rgba(46, 230, 168, 0.07), transparent 60%),
-        radial-gradient(900px 500px at -10% 10%, rgba(77, 163, 255, 0.06), transparent 60%),
+        radial-gradient(900px 500px at -10% 10%, rgba(77, 163, 255, 0.07), transparent 60%),
         var(--bg);
       color: var(--text);
       line-height: 1.6;
       min-height: 100vh;
     }
-    .wrap { max-width: 1060px; margin: 0 auto; padding: 0 22px; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 0 22px; }
 
-    nav {
-      display: flex; align-items: center; gap: 12px;
-      padding: 18px 0;
-      position: relative;
-    }
-    #tokenBadge { cursor: pointer; }
-    nav .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: 0.01em; }
+    nav { display: flex; align-items: center; gap: 12px; padding: 20px 0; }
+    nav .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
     nav .brand .mark { width: 26px; height: 26px; border-radius: 7px; background: #0d1220; border: 1px solid var(--border); display: grid; place-items: center; }
     nav .brand .mark svg { width: 16px; height: 16px; }
     nav .brand .x { color: var(--text-soft); font-weight: 500; }
     nav .spacer { flex: 1; }
-    .badge {
-      font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em;
-      padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border);
-      color: var(--text-soft); text-transform: uppercase; white-space: nowrap;
-      display: inline-flex; align-items: center; gap: 7px;
-    }
-    .badge .pip { width: 7px; height: 7px; border-radius: 50%; background: var(--text-soft); }
-    .badge.ok { color: var(--accent); border-color: var(--accent-dim); }
-    .badge.ok .pip { background: var(--accent); }
-    .badge.warn { color: var(--amber); border-color: #6b5326; }
-    .badge.warn .pip { background: var(--amber); }
-    .keypop {
-      position: absolute; right: 0; top: calc(100% + 8px); z-index: 10;
-      width: min(360px, calc(100vw - 44px)); padding: 14px;
-      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
-      font-size: 12.5px; color: var(--text-soft);
-    }
-    .keypop p { margin-bottom: 10px; }
-    .keypop .row { display: flex; gap: 8px; }
-    .keypop input {
-      flex: 1; min-width: 0; background: var(--bg-soft); color: var(--text);
-      border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px;
-      font: inherit; font-size: 12.5px;
-    }
+    nav a.lnk { color: var(--text-soft); text-decoration: none; font-size: 13.5px; font-weight: 600; }
+    nav a.lnk:hover { color: var(--text); }
 
-    header.hero { padding: 44px 0 30px; }
-    header.hero h1 { font-size: clamp(28px, 4.5vw, 42px); line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; }
-    header.hero h1 em { font-style: normal; color: var(--accent); }
-    header.hero p { color: var(--text-soft); max-width: 640px; margin-top: 14px; font-size: 16px; }
-    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
-    .chip {
-      font-size: 12px; font-family: var(--mono); color: var(--text-soft);
-      border: 1px solid var(--border); border-radius: 999px; padding: 4px 11px;
-      background: rgba(17, 24, 39, 0.6);
-    }
-
-    main.grid { display: grid; grid-template-columns: 1.25fr 1fr; gap: 18px; align-items: start; }
-    @media (max-width: 880px) { main.grid { grid-template-columns: 1fr; } }
-
-    section.card {
-      background: linear-gradient(180deg, rgba(46,230,168,0.03), transparent 30%), var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-    section.card > .head {
-      display: flex; align-items: center; gap: 10px;
-      padding: 16px 18px 12px;
-    }
-    section.card > .head .n {
-      width: 22px; height: 22px; border-radius: 6px; flex: 0 0 auto;
-      display: grid; place-items: center;
-      background: rgba(46, 230, 168, 0.12); color: var(--accent);
-      font-size: 12px; font-weight: 800;
-    }
-    section.card > .head h2 { font-size: 15.5px; font-weight: 700; }
-    section.card > .head .sub { color: var(--text-soft); font-size: 12.5px; margin-left: auto; text-align: right; }
-    section.card .body { padding: 4px 18px 18px; }
-
-    .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
-    .controls label { font-size: 12px; color: var(--text-soft); font-weight: 600; }
-    select {
-      background: var(--bg-soft); color: var(--text); border: 1px solid var(--border);
-      border-radius: 8px; padding: 7px 10px; font: inherit; font-size: 13px; cursor: pointer;
-    }
-    button.primary {
-      margin-left: auto;
-      background: var(--accent); color: #06251a; border: none; border-radius: 999px;
-      padding: 9px 22px; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer;
+    .eyebrow {
       display: inline-flex; align-items: center; gap: 8px;
-      transition: transform 0.08s ease, box-shadow 0.15s ease;
-      box-shadow: 0 6px 20px rgba(46, 230, 168, 0.25);
+      font-size: 11.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--green);
+      border: 1px solid var(--green-dim); border-radius: 999px; padding: 5px 13px;
+      background: rgba(46, 230, 168, 0.06);
     }
-    button.primary:hover { transform: translateY(-1px); }
-    button.primary:disabled { opacity: 0.55; cursor: default; transform: none; }
-    button.primary.stop { background: var(--err); color: #2b0808; box-shadow: 0 6px 20px rgba(255, 107, 107, 0.22); }
-    button.ghost {
-      background: transparent; color: var(--text-soft); border: 1px solid var(--border);
-      border-radius: 999px; padding: 7px 14px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
-    }
-    button.ghost:hover { color: var(--text); border-color: var(--text-soft); }
+    .eyebrow .pip { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
 
-    .meter { height: 4px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; margin-bottom: 4px; }
-    .meter > i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); transition: width 0.09s linear; }
+    header.hero { padding: 58px 0 46px; max-width: 780px; }
+    header.hero h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.12; font-weight: 800; letter-spacing: -0.025em; margin: 22px 0 0; }
+    header.hero h1 .dg { color: var(--green); }
+    header.hero h1 .wf { color: var(--blue); }
+    header.hero p.lede { color: var(--text-soft); font-size: 17px; margin-top: 18px; max-width: 640px; }
+    header.hero .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+    a.btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      border-radius: 999px; padding: 11px 22px; font-size: 14.5px; font-weight: 700;
+      text-decoration: none; transition: transform 0.08s ease;
+    }
+    a.btn:hover { transform: translateY(-1px); }
+    a.btn.primary { background: var(--green); color: #06251a; box-shadow: 0 6px 22px rgba(46, 230, 168, 0.25); }
+    a.btn.ghost { color: var(--text); border: 1px solid var(--border); background: rgba(17, 24, 39, 0.6); }
+    a.btn.ghost:hover { border-color: var(--text-soft); }
 
-    #transcript {
-      min-height: 240px; max-height: 340px; overflow-y: auto;
-      background: var(--bg-soft); border: 1px solid var(--border); border-radius: 12px;
-      padding: 16px; font-size: 15px;
-      display: flex; flex-direction: column; gap: 10px;
-    }
-    #transcript .placeholder { color: var(--text-soft); font-size: 13.5px; margin: auto; text-align: center; }
-    #transcript .final { color: var(--text); }
-    #transcript .final .t { color: var(--text-soft); font-size: 11px; font-family: var(--mono); margin-right: 8px; }
-    #transcript .interim { color: var(--text-soft); font-style: italic; }
-    #transcript .interim::after { content: "▍"; color: var(--accent); animation: blink 1s step-end infinite; }
-    @keyframes blink { 50% { opacity: 0; } }
+    section { padding: 30px 0; }
+    h2.sec { font-size: clamp(20px, 3vw, 27px); font-weight: 800; letter-spacing: -0.015em; margin-top: 10px; }
+    p.secsub { color: var(--text-soft); margin-top: 8px; max-width: 560px; font-size: 15px; }
 
-    .stats { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; color: var(--text-soft); font-size: 12.5px; }
-    .stats b { color: var(--text); font-family: var(--mono); font-weight: 600; }
-    .stats .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-soft); display: inline-block; margin-right: 6px; }
-    .stats .dot.live { background: var(--accent); box-shadow: 0 0 8px rgba(46,230,168,0.8); }
-
-    .errbox {
-      display: none; margin-top: 12px; padding: 10px 14px; border-radius: 10px;
-      background: rgba(255, 107, 107, 0.08); border: 1px solid rgba(255, 107, 107, 0.35);
-      color: var(--err); font-size: 13px;
+    /* ---- the body plan ---- */
+    .brain {
+      display: flex; align-items: center; gap: 16px;
+      border: 1px solid var(--border); border-radius: 16px;
+      background: linear-gradient(180deg, rgba(232, 237, 245, 0.05), transparent 55%), var(--card);
+      padding: 20px 22px; margin-top: 26px;
     }
-
-    #fileZone {
-      border: 1.5px dashed var(--border); border-radius: 12px; padding: 26px 18px;
-      text-align: center; color: var(--text-soft); font-size: 13.5px; cursor: pointer;
-      transition: border-color 0.15s ease, background 0.15s ease;
+    .brain .icon {
+      flex: 0 0 auto; width: 52px; height: 52px; border-radius: 14px;
+      display: grid; place-items: center;
+      background: rgba(232, 237, 245, 0.07); color: var(--text);
+      border: 1px solid var(--border);
     }
-    #fileZone.drag, #fileZone:hover { border-color: var(--accent-dim); background: rgba(46, 230, 168, 0.04); }
-    #fileZone b { color: var(--text); }
-    #fileZone input { display: none; }
-    #fileRow { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-    #fileRow audio { flex: 1; min-width: 200px; height: 36px; }
-    #fileResult {
-      margin-top: 14px; background: var(--bg-soft); border: 1px solid var(--border);
-      border-radius: 12px; padding: 16px; font-size: 14.5px; display: none;
-      max-height: 260px; overflow-y: auto;
-    }
-    #fileResult .meta { color: var(--text-soft); font-size: 12px; font-family: var(--mono); margin-top: 10px; }
-
-    section.wide { margin-top: 18px; }
-    section.wide .body { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-    @media (max-width: 880px) { section.wide .body { grid-template-columns: 1fr; } }
-    .steps { list-style: none; display: flex; flex-direction: column; gap: 12px; }
-    .steps li { display: flex; gap: 12px; font-size: 13.5px; color: var(--text-soft); }
-    .steps li b { color: var(--text); }
-    .steps .k {
-      flex: 0 0 auto; width: 22px; height: 22px; border-radius: 6px; margin-top: 1px;
-      display: grid; place-items: center; font-size: 11.5px; font-weight: 800;
-      background: rgba(77, 163, 255, 0.12); color: var(--blue);
-    }
-    pre.flow {
-      background: var(--bg-soft); border: 1px solid var(--border); border-radius: 12px;
-      padding: 16px; font-family: var(--mono); font-size: 12px; line-height: 1.75;
-      color: var(--text-soft); overflow-x: auto; white-space: pre;
-    }
-    pre.flow b { color: var(--accent); font-weight: 600; }
-    pre.flow em { color: var(--blue); font-style: normal; }
-    code.inline {
-      font-family: var(--mono); font-size: 0.92em; color: var(--blue);
-      background: rgba(77, 163, 255, 0.08); border-radius: 5px; padding: 1px 6px;
+    .brain h3 { font-size: 16.5px; font-weight: 800; }
+    .brain p { color: var(--text-soft); font-size: 13.5px; }
+    .brain .tag {
+      margin-left: auto; flex: 0 0 auto; font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+      color: var(--text-soft); border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px;
     }
 
-    footer { margin: 40px 0 30px; color: var(--text-soft); font-size: 12.5px; border-top: 1px solid var(--border); padding-top: 18px; }
-    footer p + p { margin-top: 6px; }
+    .senses { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+    @media (max-width: 760px) { .senses { grid-template-columns: 1fr; } }
+    .sense-col { display: flex; flex-direction: column; gap: 14px; }
+    .sense-col .colhead {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-soft); padding: 2px 4px 0;
+    }
+    .sense-col .colhead i { width: 8px; height: 8px; border-radius: 50%; }
+    .sense-col.dg .colhead i { background: var(--green); }
+    .sense-col.wf .colhead i { background: var(--blue); }
+
+    .sense {
+      border: 1px solid var(--border); border-radius: 16px;
+      background: var(--card); padding: 18px 20px;
+      display: flex; gap: 15px; align-items: flex-start;
+    }
+    .sense .icon {
+      flex: 0 0 auto; width: 44px; height: 44px; border-radius: 12px;
+      display: grid; place-items: center;
+    }
+    .sense h3 { font-size: 15.5px; font-weight: 800; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .sense h3 .what { color: var(--text); }
+    .sense p { color: var(--text-soft); font-size: 13.5px; margin-top: 5px; }
+    .sense .tech { font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 999px; padding: 2px 9px; }
+    .sense-col.dg .sense .icon { background: rgba(46, 230, 168, 0.1); color: var(--green); }
+    .sense-col.dg .sense { border-color: rgba(46, 230, 168, 0.22); }
+    .sense-col.dg .tech { color: var(--green); background: rgba(46, 230, 168, 0.09); }
+    .sense-col.wf .sense .icon { background: rgba(77, 163, 255, 0.1); color: var(--blue); }
+    .sense-col.wf .sense { border-color: rgba(77, 163, 255, 0.22); }
+    .sense-col.wf .tech { color: var(--blue); background: rgba(77, 163, 255, 0.09); }
+
+    /* ---- the loop ---- */
+    .loop { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+    .step {
+      flex: 1 1 150px; min-width: 150px;
+      border: 1px solid var(--border); border-radius: 14px;
+      background: var(--card); padding: 14px 16px;
+      position: relative;
+    }
+    .step .n {
+      width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center;
+      font-size: 11.5px; font-weight: 800; margin-bottom: 9px;
+      background: rgba(232, 237, 245, 0.08); color: var(--text);
+    }
+    .step h4 { font-size: 13.5px; font-weight: 800; }
+    .step p { color: var(--text-soft); font-size: 12px; margin-top: 3px; }
+    .step .who { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 9px; }
+    .step.dg .who { color: var(--green); }
+    .step.wf .who { color: var(--blue); }
+    .step.you .who { color: var(--text-soft); }
+    .loop-note { color: var(--text-soft); font-size: 13.5px; margin-top: 16px; max-width: 640px; }
+    .loop-note b { color: var(--text); }
+
+    /* ---- in-session callout ---- */
+    .callout {
+      border: 1px solid var(--green-dim); border-radius: 16px;
+      background: linear-gradient(180deg, rgba(46, 230, 168, 0.07), transparent 60%), var(--card);
+      padding: 22px 24px; margin-top: 26px;
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .callout .icon {
+      flex: 0 0 auto; width: 44px; height: 44px; border-radius: 12px;
+      display: grid; place-items: center;
+      background: rgba(46, 230, 168, 0.12); color: var(--green);
+    }
+    .callout h3 { font-size: 15.5px; font-weight: 800; }
+    .callout p { color: var(--text-soft); font-size: 13.5px; margin-top: 5px; }
+    .callout p b { color: var(--text); }
+
+    footer { margin: 46px 0 30px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--text-soft); font-size: 12.5px; }
+    footer a { color: var(--text-soft); }
+    footer a:hover { color: var(--text); }
   </style>
 </head>
 <body>
@@ -208,566 +175,160 @@
         Deepgram <span class="x">×</span> Webfuse
       </div>
       <div class="spacer"></div>
-      <span class="badge" id="tokenBadge" title="Checking credential mode…"><span class="pip"></span><span id="tokenBadgeText">token…</span></span>
+      <a class="lnk" href="./demo.html">Live demo</a>
+      <a class="lnk" href="https://github.com/vipin-surfly/webfuse-deepgram">GitHub</a>
     </nav>
 
-    <div class="keypop" id="keyPop" hidden>
-      <p><b style="color: var(--text)">POC key for static hosting.</b> If this copy has no
-        <code class="inline">/api/token</code> endpoint (e.g. GitHub Pages), paste a Deepgram API
-        key here — it is kept in this browser's localStorage and sent only to
-        <code class="inline">api.deepgram.com</code>.</p>
-      <div class="row">
-        <input type="password" id="keyInput" placeholder="Deepgram API key" autocomplete="off">
-        <button class="ghost" id="keySave">save</button>
-        <button class="ghost" id="keyClear" title="Remove the stored key">clear</button>
-      </div>
-    </div>
-
     <header class="hero">
-      <h1>Live AI captions, <em>everywhere</em> your session goes.</h1>
-      <p>
-        Streaming speech-to-text powered by Deepgram Nova-3. Run it here from your microphone,
-        or drop the same panel into any Webfuse session with the bundled extension — every
-        participant who joins gets a floating caption panel over any website they co-browse.
+      <span class="eyebrow"><span class="pip"></span>Webfuse × Deepgram</span>
+      <h1>Your agent can think.<br>Now give it <span class="dg">ears</span> and a <span class="dg">mouth</span>,<br><span class="wf">eyes</span> and <span class="wf">hands</span>.</h1>
+      <p class="lede">
+        Alone, an LLM lives in a text box. Connect it to a Webfuse session and it gets a
+        browser body — it sees and uses any website, live, while the customer watches.
+        Deepgram adds the senses of voice: it hears speech as it happens and answers out loud.
       </p>
-      <div class="chips">
-        <span class="chip">/v1/listen · streaming WebSocket</span>
-        <span class="chip">linear16 · 16 kHz</span>
-        <span class="chip">interim results · smart format</span>
-        <span class="chip">keyterm: Webfuse, Deepgram</span>
+      <div class="ctas">
+        <a class="btn primary" href="./demo.html">
+          Try the ears — live demo
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn ghost" href="https://github.com/vipin-surfly/webfuse-deepgram">How it's built</a>
       </div>
     </header>
 
-    <main class="grid">
+    <!-- ============ the body plan ============ -->
+    <section>
+      <span class="eyebrow"><span class="pip"></span>The body plan</span>
+      <h2 class="sec">One agent, four senses, two building blocks</h2>
+      <p class="secsub">Deepgram is the voice — hearing and speaking. Webfuse is the body — perceiving and acting inside a live, shared browser session.</p>
 
-      <!-- ============ 1. live microphone ============ -->
-      <section class="card" id="liveCard">
-        <div class="head">
-          <span class="n">1</span>
-          <h2>Live microphone captions</h2>
-          <span class="sub" id="liveState">idle</span>
+      <div class="brain">
+        <div class="icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg>
         </div>
-        <div class="body">
-          <div class="controls">
-            <label for="modelSel">model</label>
-            <select id="modelSel">
-              <option value="nova-3" selected>nova-3</option>
-              <option value="nova-2">nova-2</option>
-            </select>
-            <label for="langSel">language</label>
-            <select id="langSel">
-              <option value="en" selected>en</option>
-              <option value="multi">multi (auto)</option>
-              <option value="es">es</option>
-              <option value="fr">fr</option>
-              <option value="de">de</option>
-              <option value="hi">hi</option>
-              <option value="nl">nl</option>
-            </select>
-            <button class="primary" id="liveBtn">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3z"/><path d="M19 11a1 1 0 1 0-2 0 5 5 0 0 1-10 0 1 1 0 1 0-2 0 7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11z"/></svg>
-              Start captions
-            </button>
-          </div>
-          <div class="meter"><i id="level"></i></div>
-          <div id="transcript">
-            <div class="placeholder" id="livePlaceholder">
-              Press <b>Start captions</b> and speak.<br>
-              <span style="font-size:12px">Try: “Show me how Webfuse and Deepgram work together.”</span>
+        <div>
+          <h3>The brain — your agent</h3>
+          <p>Any LLM, any framework. It thinks and decides; the four senses do the rest.</p>
+        </div>
+        <span class="tag">yours</span>
+      </div>
+
+      <div class="senses">
+        <div class="sense-col dg">
+          <div class="colhead"><i></i>Deepgram — the voice</div>
+          <div class="sense">
+            <div class="icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11.5" rx="3"/><path d="M5 10.5v.5a7 7 0 0 0 14 0v-.5"/><path d="M12 18.5V22"/><path d="M8.5 22h7"/></svg>
+            </div>
+            <div>
+              <h3><span class="what">Ears</span><span class="tech">Nova-3 streaming STT</span></h3>
+              <p>The customer speaks; the agent reads it as text in real time — live interim results, 300&nbsp;ms endpointing, keyterm-boosted vocabulary.</p>
             </div>
           </div>
-          <div class="stats">
-            <span><span class="dot" id="liveDot"></span><b id="stState">idle</b></span>
-            <span>elapsed <b id="stElapsed">0:00</b></span>
-            <span>words <b id="stWords">0</b></span>
-            <span>avg confidence <b id="stConf">—</b></span>
-            <span style="margin-left:auto">
-              <button class="ghost" id="copyBtn" title="Copy transcript">copy</button>
-              <button class="ghost" id="dlBtn" title="Download transcript as .txt">.txt</button>
-            </span>
+          <div class="sense">
+            <div class="icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.7 8.4 8.9 8.9 0 0 1-3.6-.8L3 21l1.9-5a8.1 8.1 0 0 1-.9-3.6A8.4 8.4 0 0 1 12.4 3h.2a8.4 8.4 0 0 1 8.4 8.5z"/><path d="M8.5 10.5h7M8.5 13.5h4.5"/></svg>
+            </div>
+            <div>
+              <h3><span class="what">Mouth</span><span class="tech">Aura / Flux TTS</span></h3>
+              <p>The agent answers out loud in a natural voice — streamed, low-latency, in the same session the customer is in.</p>
+            </div>
           </div>
-          <div class="errbox" id="liveErr"></div>
         </div>
-      </section>
 
-      <!-- ============ 2. file transcription ============ -->
-      <section class="card" id="fileCard">
-        <div class="head">
-          <span class="n">2</span>
-          <h2>Transcribe an audio file</h2>
-          <span class="sub">pre-recorded REST</span>
-        </div>
-        <div class="body">
-          <div id="fileZone">
-            <b>Drop an audio or video file</b> (or click to browse)<br>
-            <span style="font-size:12px">wav · mp3 · m4a · mp4 · flac · ogg …</span>
-            <input type="file" id="fileInput" accept="audio/*,video/*">
+        <div class="sense-col wf">
+          <div class="colhead"><i></i>Webfuse — the body</div>
+          <div class="sense">
+            <div class="icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5.5 12 5.5 22.5 12 22.5 12 18.5 18.5 12 18.5 1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <div>
+              <h3><span class="what">Eyes</span><span class="tech">Session MCP</span></h3>
+              <p>The agent sees whatever page the session is on: DOM snapshots, the accessibility tree, page info — what the customer sees, it sees.</p>
+            </div>
           </div>
-          <div id="fileRow" hidden>
-            <audio controls id="fileAudio"></audio>
-            <button class="primary" id="fileBtn" style="margin-left:0">Transcribe</button>
+          <div class="sense">
+            <div class="icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 7.5-6.3 1.7L9.5 19 5 3z"/><path d="M13.5 13.5l4.5 4.5"/></svg>
+            </div>
+            <div>
+              <h3><span class="what">Hands</span><span class="tech">Session MCP</span></h3>
+              <p>Navigate, click, type, scroll — on any website, no integration from the site. Every action happens in the live session the customer is watching.</p>
+            </div>
           </div>
-          <div id="fileResult"></div>
-          <div class="errbox" id="fileErr"></div>
         </div>
-      </section>
-    </main>
-
-    <!-- ============ how it works ============ -->
-    <section class="card wide">
-      <div class="head">
-        <span class="n">3</span>
-        <h2>How it works</h2>
-        <span class="sub">your key never ships in this page</span>
-      </div>
-      <div class="body">
-        <ol class="steps">
-          <li><span class="k">1</span><span>The page asks <b>your token endpoint</b> (<code class="inline">GET /api/token</code>) for a credential — <code class="inline">server.js</code> locally, or any host you deploy it to. On static hosting (GitHub Pages) with no endpoint, the badge popover accepts a pasted key (<b>POC mode</b>).</span></li>
-          <li><span class="k">2</span><span>The endpoint asks Deepgram to <b>mint a short-lived JWT</b> (<code class="inline">POST /v1/auth/grant</code>). If the API key lacks Member permission it falls back to returning the key itself, clearly labeled <b>POC mode</b>.</span></li>
-          <li><span class="k">3</span><span>The browser opens the streaming WebSocket to <code class="inline">wss://api.deepgram.com/v1/listen</code>. Browsers cannot set headers on a WebSocket, so the credential rides the <b>subprotocol</b>: <code class="inline">new WebSocket(url, ["token", credential])</code>.</span></li>
-          <li><span class="k">4</span><span>Mic audio is captured with an <b>AudioWorklet</b>, converted to raw 16-bit PCM at 16 kHz, and streamed in ~100 ms chunks. Interim results render live; finalized segments lock in.</span></li>
-        </ol>
-        <pre class="flow">
-<b>browser</b>                    <em>your endpoint</em>               <b>Deepgram</b>
-   │  GET /api/token              │                          │
-   ├─────────────────────────────►│  POST /v1/auth/grant     │
-   │                              ├─────────────────────────►│
-   │  {token, mode}               │◄───── access_token ──────┤
-   │◄─────────────────────────────┤                          │
-   │                                                         │
-   │  WS wss://…/v1/listen  (subprotocol: token, &lt;cred&gt;)      │
-   ├────────────────────────────────────────────────────────►│
-   │  ◄── interim / final Results ──────────────────────────┤
-        </pre>
       </div>
     </section>
 
-    <!-- ============ inside webfuse ============ -->
-    <section class="card wide">
-      <div class="head">
-        <span class="n">4</span>
-        <h2>Inside Webfuse sessions</h2>
-        <span class="sub">the bundled extension</span>
+    <!-- ============ the loop ============ -->
+    <section>
+      <span class="eyebrow"><span class="pip"></span>The loop</span>
+      <h2 class="sec">One turn of the conversation</h2>
+      <p class="secsub">Voice in, action out — and the customer never leaves their browser.</p>
+
+      <div class="loop">
+        <div class="step you">
+          <div class="n">1</div>
+          <h4>The customer speaks</h4>
+          <p>“Check what’s in stock and order two.”</p>
+          <div class="who">customer</div>
+        </div>
+        <div class="step dg">
+          <div class="n">2</div>
+          <h4>Ears transcribe</h4>
+          <p>Nova-3 streams the words as they are spoken.</p>
+          <div class="who">Deepgram</div>
+        </div>
+        <div class="step you">
+          <div class="n">3</div>
+          <h4>Brain decides</h4>
+          <p>The LLM plans the steps — open, find, click, order.</p>
+          <div class="who">your agent</div>
+        </div>
+        <div class="step wf">
+          <div class="n">4</div>
+          <h4>Hands act</h4>
+          <p>The session MCP navigates, clicks and types — live, on screen.</p>
+          <div class="who">Webfuse</div>
+        </div>
+        <div class="step dg">
+          <div class="n">5</div>
+          <h4>Mouth answers</h4>
+          <p>“Done — two units, arriving Thursday.”</p>
+          <div class="who">Deepgram</div>
+        </div>
       </div>
-      <div class="body">
-        <ol class="steps">
-          <li><span class="k">1</span><span><b>Install the extension</b> on a Webfuse Space from the GitHub repository — <code class="inline">vipin-surfly/webfuse-deepgram</code>, ref <code class="inline">extension</code> (Studio → Space → Extensions). It is a floating caption panel that attaches to <b>every page</b> browsed in that Space.</span></li>
-          <li><span class="k">2</span><span>In the extension's settings, set <b>DEEPGRAM_API_KEY</b> (POC mode — the key goes straight from each browser to Deepgram) or <b>TOKEN_URL</b> (a hosted <code class="inline">server.js</code> minting short-lived grants).</span></li>
-          <li><span class="k">3</span><span><b>Open a session</b> on the Space and share the link — each participant gets the caption panel, one click starts live captions with their own microphone. Audio goes straight from their browser to Deepgram; only text renders in the session.</span></li>
-          <li><span class="k">4</span><span>This page itself is served from <b>GitHub Pages</b> (push to <code class="inline">main</code>) — the standalone demo needs no server, and <code class="inline">server.js</code> adds the token endpoint when you want it.</span></li>
-        </ol>
-        <pre class="flow">
-<b>Webfuse Space</b> (proxy config: apps + extensions)
-   └── <b>Session</b> — any website, co-browsed by N participants
-        └── <em>Deepgram Live Captions</em> extension
-             ├── floating panel on every page in the session
-             ├── GET TOKEN_URL → {token, mode}      (your endpoint)
-             ├── mic → AudioWorklet → 16 kHz PCM
-             └── WS api.deepgram.com/v1/listen → captions
-        </pre>
+      <p class="loop-note">
+        <b>The customer watches every step</b> — because the eyes and the hands work inside a
+        shared Webfuse session, not a hidden browser. Co-browsing with an agent that talks,
+        listens and acts.
+      </p>
+    </section>
+
+    <!-- ============ in-session ============ -->
+    <section>
+      <div class="callout">
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11.5" rx="3"/><path d="M5 10.5v.5a7 7 0 0 0 14 0v-.5"/><path d="M12 18.5V22"/></svg>
+        </div>
+        <div>
+          <h3>Viewing this inside a Webfuse session?</h3>
+          <p>
+            The <b>caption panel floating in the corner is the ears, already listening</b> —
+            one click, and your speech turns into live text on this page. That same session is
+            what the eyes and hands plug into: point your agent at the Webfuse Session MCP and
+            it can see and use every page you browse together.
+          </p>
+        </div>
       </div>
     </section>
 
     <footer>
-      <p>POC — <b>webfuse-deepgram</b> (<a href="https://github.com/vipin-surfly/webfuse-deepgram" style="color:var(--blue)">github.com/vipin-surfly/webfuse-deepgram</a>): demo page (this site, GitHub Pages), token endpoint (<code class="inline">server.js</code> — self-hostable), Webfuse extension (<code class="inline">extension/</code>). See <b>GUIDE.md</b> for the full walkthrough.</p>
-      <p>POC key modes (pasted key, raw-key fallback, extension setting) hand the API key to the browser — fine for a demo, not for production. Create a Member-permission key in the Deepgram console and host <code class="inline">server.js</code> to switch to short-lived grants.</p>
+      <span>POC — Deepgram × Webfuse</span>
+      <a href="./demo.html">Live demo</a>
+      <a href="https://github.com/vipin-surfly/webfuse-deepgram">GitHub</a>
+      <a href="https://github.com/vipin-surfly/webfuse-deepgram/blob/main/GUIDE.md">Guide</a>
     </footer>
   </div>
-
-<script>
-"use strict";
-
-/* ------------------------------------------------------------------ *
- *  Credential — GET /api/token → {token, mode}
- *  mode "grant"        short-lived JWT (preferred)
- *  mode "fallback-key" raw key returned because the key cannot mint
- *                      grants; the header badge warns about it.
- * ------------------------------------------------------------------ */
-const KEY_STORAGE = "dg_poc_key";
-
-async function getToken() {
-  // 1) token endpoint — server.js locally, or any host you deploy it to
-  try {
-    const r = await fetch("/api/token");
-    if (r.ok) {
-      const j = await r.json().catch(() => ({}));
-      if (j.token) return j;
-    }
-  } catch { /* statically hosted — fall through */ }
-  // 2) static hosting (GitHub Pages): a key pasted via the badge popover
-  const key = localStorage.getItem(KEY_STORAGE);
-  if (key) return { token: key, mode: "pasted-key" };
-  throw new Error("no credential");
-}
-
-const badge = document.getElementById("tokenBadge");
-const badgeText = document.getElementById("tokenBadgeText");
-let tokenMode = null;
-
-function refreshBadge() {
-  return (async () => {
-    let j;
-    try {
-      j = await getToken();
-    } catch {
-      badge.className = "badge warn";
-      badgeText.textContent = "set key";
-      badge.title = "No token endpoint and no stored key — click the badge to paste a Deepgram API key (POC mode).";
-      return;
-    }
-    tokenMode = j.mode;
-    if (j.mode === "grant") {
-      badge.className = "badge ok";
-      badgeText.textContent = "short-lived token";
-      badge.title = "The endpoint mints 15-minute Deepgram grants. The raw key stays server-side.";
-    } else if (j.mode === "pasted-key") {
-      badge.className = "badge warn";
-      badgeText.textContent = "POC: pasted key";
-      badge.title = "Static hosting has no token endpoint, so this browser uses a key pasted via the badge. It is sent only to api.deepgram.com.";
-    } else {
-      badge.className = "badge warn";
-      badgeText.textContent = "POC: raw key fallback";
-      badge.title = "This API key cannot mint short-lived grants (/v1/auth/grant needs Member permission), so the endpoint returns the key itself. Create a Member-permission key in the Deepgram console to enable the secure path.";
-    }
-  })();
-}
-refreshBadge();
-
-// POC key entry for statically hosted copies (GitHub Pages)
-const keyPop = document.getElementById("keyPop");
-badge.addEventListener("click", () => { keyPop.hidden = !keyPop.hidden; });
-document.getElementById("keySave").addEventListener("click", () => {
-  const v = document.getElementById("keyInput").value.trim();
-  if (v) localStorage.setItem(KEY_STORAGE, v);
-  keyPop.hidden = true;
-  refreshBadge();
-});
-document.getElementById("keyClear").addEventListener("click", () => {
-  localStorage.removeItem(KEY_STORAGE);
-  document.getElementById("keyInput").value = "";
-  refreshBadge();
-});
-
-/* ------------------------------------------------------------------ *
- *  Live caption engine (mic → AudioWorklet → PCM → Deepgram WS)
- *  Shared shape with extension/popup.js — keep the two in sync.
- * ------------------------------------------------------------------ */
-
-// AudioWorklet processor: Float32 mic frames → Int16 PCM buffers.
-// Created from a Blob URL so the page is a single file and no separate
-// asset request can be blocked or rewritten.
-const WORKLET_SRC = `
-class PCMCapture extends AudioWorkletProcessor {
-  process(inputs) {
-    const ch = inputs[0] && inputs[0][0];
-    if (ch) {
-      const pcm = new Int16Array(ch.length);
-      let sum = 0;
-      for (let i = 0; i < ch.length; i++) {
-        const s = Math.max(-1, Math.min(1, ch[i]));
-        pcm[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
-        sum += s * s;
-      }
-      this.port.postMessage({ pcm: pcm.buffer, rms: Math.sqrt(sum / ch.length) }, [pcm.buffer]);
-    }
-    return true;
-  }
-}
-registerProcessor("pcm-capture", PCMCapture);
-`;
-
-function boostParams(model) {
-  // nova-3 boosts vocabulary with keyterm; nova-2 with keywords.
-  const p = new URLSearchParams();
-  if (model === "nova-3") {
-    p.append("keyterm", "Webfuse");
-    p.append("keyterm", "Deepgram");
-  } else {
-    p.append("keywords", "Webfuse");
-    p.append("keywords", "Deepgram");
-  }
-  return p;
-}
-
-const live = {
-  running: false,
-  ws: null,
-  ctx: null,
-  stream: null,
-  node: null,
-  keepAlive: null,
-  statsTimer: null,
-  startedAt: 0,
-  words: 0,
-  confSum: 0,
-  confN: 0,
-  finals: [],
-};
-
-const $ = (id) => document.getElementById(id);
-const transcriptEl = $("transcript");
-const placeholder = $("livePlaceholder");
-const interimEl = document.createElement("div");
-interimEl.className = "interim";
-
-function liveError(msg) {
-  const box = $("liveErr");
-  box.style.display = "block";
-  box.textContent = msg;
-}
-const clearLiveError = () => ($("liveErr").style.display = "none");
-
-function setLiveState(text, live_) {
-  $("liveState").textContent = text;
-  $("stState").textContent = text;
-  $("liveDot").className = "dot" + (live_ ? " live" : "");
-}
-
-function addFinal(text, confidence) {
-  if (placeholder) placeholder.remove();
-  const p = document.createElement("div");
-  p.className = "final";
-  const t = document.createElement("span");
-  t.className = "t";
-  t.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  p.append(t, document.createTextNode(text));
-  transcriptEl.insertBefore(p, interimEl.parentNode === transcriptEl ? interimEl : null);
-  transcriptEl.scrollTop = transcriptEl.scrollHeight;
-  live.finals.push(text);
-  live.words += text.trim().split(/\s+/).filter(Boolean).length;
-  live.confSum += confidence || 0;
-  live.confN += 1;
-  $("stWords").textContent = live.words;
-  $("stConf").textContent = live.confN ? (live.confSum / live.confN).toFixed(2) : "—";
-}
-
-function setInterim(text) {
-  if (!text) {
-    interimEl.remove();
-    return;
-  }
-  if (placeholder) placeholder.remove();
-  interimEl.textContent = text;
-  transcriptEl.appendChild(interimEl);
-  transcriptEl.scrollTop = transcriptEl.scrollHeight;
-}
-
-async function startLive() {
-  clearLiveError();
-  const model = $("modelSel").value;
-  const language = $("langSel").value;
-
-  let token;
-  try {
-    ({ token } = await getToken());
-  } catch (e) {
-    return liveError(`Could not get a credential: ${e.message}`);
-  }
-
-  let stream;
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-    });
-  } catch (e) {
-    return liveError(
-      e.name === "NotAllowedError"
-        ? "Microphone permission was denied. Allow mic access for this page and try again."
-        : `Could not open the microphone: ${e.message}`);
-  }
-
-  try {
-    const ctx = new AudioContext({ sampleRate: 16000 });
-    if (ctx.state === "suspended") await ctx.resume();
-    await ctx.audioWorklet.addModule(
-      URL.createObjectURL(new Blob([WORKLET_SRC], { type: "application/javascript" })));
-
-    const params = new URLSearchParams({
-      model,
-      language,
-      encoding: "linear16",
-      sample_rate: String(ctx.sampleRate),
-      smart_format: "true",
-      interim_results: "true",
-      endpointing: "300",
-    });
-    for (const [k, v] of boostParams(model)) params.append(k, v);
-
-    // Browsers cannot set the Authorization header on a WebSocket, so the
-    // credential rides the Sec-WebSocket-Protocol: token, <credential>.
-    const ws = new WebSocket(`wss://api.deepgram.com/v1/listen?${params}`, ["token", token]);
-
-    const node = new AudioWorkletNode(ctx, "pcm-capture");
-    node.port.onmessage = (e) => {
-      $("level").style.width = `${Math.min(100, Math.round(e.data.rms * 320))}%`;
-      if (ws.readyState === WebSocket.OPEN) ws.send(e.data.pcm);
-    };
-
-    // A zero-gain sink guarantees the worklet is pulled by the audio graph
-    // (an output-less worklet node can be skipped by some browsers).
-    const sink = ctx.createGain();
-    sink.gain.value = 0;
-    node.connect(sink).connect(ctx.destination);
-
-    ws.onopen = () => {
-      ctx.createMediaStreamSource(stream).connect(node);
-      live.keepAlive = setInterval(() => {
-        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "KeepAlive" }));
-      }, 5000);
-    };
-
-    ws.onmessage = (ev) => {
-      let m;
-      try { m = JSON.parse(ev.data); } catch { return; }
-      if (m.type !== "Results" || !m.channel) return;
-      const alt = m.channel.alternatives && m.channel.alternatives[0];
-      if (!alt) return;
-      if (m.is_final) { setInterim(""); addFinal(alt.transcript, alt.confidence); }
-      else setInterim(alt.transcript);
-    };
-
-    ws.onerror = () => liveError("WebSocket error — see the browser console. (Credential rejected? The token endpoint may need redeploying.)");
-    ws.onclose = (e) => {
-      if (live.running) {
-        stopLive();
-        if (e.code !== 1000) liveError(`Connection closed (${e.code}${e.reason ? ": " + e.reason : ""}).`);
-      }
-    };
-
-    Object.assign(live, { running: true, ws, ctx, stream, node, startedAt: Date.now() });
-    setLiveState("listening", true);
-    const btn = $("liveBtn");
-    btn.classList.add("stop");
-    btn.lastChild.textContent = " Stop";
-    $("livePlaceholder")?.remove();
-
-    live.statsTimer = setInterval(() => {
-      const s = Math.floor((Date.now() - live.startedAt) / 1000);
-      $("stElapsed").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-    }, 500);
-  } catch (e) {
-    stream.getTracks().forEach((t) => t.stop());
-    liveError(`Could not start: ${e.message}`);
-  }
-}
-
-function stopLive() {
-  if (!live.running) return;
-  live.running = false;
-
-  if (live.keepAlive) clearInterval(live.keepAlive);
-  if (live.statsTimer) clearInterval(live.statsTimer);
-  try { if (live.node) live.node.disconnect(); } catch {}
-  try { if (live.stream) live.stream.getTracks().forEach((t) => t.stop()); } catch {}
-  try { if (live.ctx) live.ctx.close(); } catch {}
-  if (live.ws && live.ws.readyState === WebSocket.OPEN) {
-    // Finalize flushes any pending audio into a final result, then we close.
-    live.ws.send(JSON.stringify({ type: "Finalize" }));
-    const ws = live.ws;
-    setTimeout(() => { if (ws.readyState === WebSocket.OPEN) ws.close(1000); }, 900);
-  }
-  Object.assign(live, { ws: null, ctx: null, stream: null, node: null });
-  $("level").style.width = "0%";
-  setInterim("");
-  setLiveState("stopped", false);
-  const btn = $("liveBtn");
-  btn.classList.remove("stop");
-  btn.lastChild.textContent = " Start captions";
-}
-
-$("liveBtn").addEventListener("click", () => (live.running ? stopLive() : startLive()));
-
-$("modelSel").addEventListener("change", () => {
-  // nova-2 has no "multi" language code
-  const langSel = $("langSel");
-  const multi = langSel.querySelector('option[value="multi"]');
-  multi.disabled = $("modelSel").value === "nova-2";
-  if (multi.selected && multi.disabled) langSel.value = "en";
-});
-
-$("copyBtn").addEventListener("click", async () => {
-  if (!live.finals.length) return;
-  await navigator.clipboard.writeText(live.finals.join("\n"));
-  $("copyBtn").textContent = "copied!";
-  setTimeout(() => ($("copyBtn").textContent = "copy"), 1200);
-});
-
-$("dlBtn").addEventListener("click", () => {
-  if (!live.finals.length) return;
-  const blob = new Blob([live.finals.join("\n")], { type: "text/plain" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `transcript-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.txt`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-});
-
-/* ------------------------------------------------------------------ *
- *  File transcription — POST /v1/listen (pre-recorded)
- * ------------------------------------------------------------------ */
-let pickedFile = null;
-
-const fileZone = $("fileZone");
-const fileInput = $("fileInput");
-
-fileZone.addEventListener("click", () => fileInput.click());
-fileZone.addEventListener("dragover", (e) => { e.preventDefault(); fileZone.classList.add("drag"); });
-fileZone.addEventListener("dragleave", () => fileZone.classList.remove("drag"));
-fileZone.addEventListener("drop", (e) => {
-  e.preventDefault();
-  fileZone.classList.remove("drag");
-  if (e.dataTransfer.files[0]) pickFile(e.dataTransfer.files[0]);
-});
-fileInput.addEventListener("change", () => { if (fileInput.files[0]) pickFile(fileInput.files[0]); });
-
-function pickFile(f) {
-  pickedFile = f;
-  $("fileRow").hidden = false;
-  $("fileResult").style.display = "none";
-  $("fileAudio").src = URL.createObjectURL(f);
-  $("fileBtn").disabled = false;
-}
-
-$("fileBtn").addEventListener("click", async () => {
-  const box = $("fileErr");
-  box.style.display = "none";
-  if (!pickedFile) return;
-  const btn = $("fileBtn");
-  const result = $("fileResult");
-    btn.disabled = true;
-    btn.lastChild.textContent = "Working…";
-
-  try {
-    const { token, mode } = await getToken();
-    // Grants authenticate REST calls as Bearer JWTs; raw keys as Token.
-    const auth = mode === "grant" ? `Bearer ${token}` : `Token ${token}`;
-    const params = new URLSearchParams({ model: "nova-3", smart_format: "true" });
-    for (const [k, v] of boostParams("nova-3")) params.append(k, v);
-
-    const r = await fetch(`https://api.deepgram.com/v1/listen?${params}`, {
-      method: "POST",
-      headers: { Authorization: auth },
-      body: pickedFile,
-    });
-    const j = await r.json();
-    if (!r.ok) throw new Error(j.err_msg || `HTTP ${r.status}`);
-
-    const alt = j.results?.channels?.[0]?.alternatives?.[0];
-    result.style.display = "block";
-    result.textContent = alt?.transcript || "(no speech found)";
-    const meta = document.createElement("div");
-    meta.className = "meta";
-    meta.textContent =
-      `duration ${(j.metadata?.duration ?? 0).toFixed(1)}s · confidence ${(alt?.confidence ?? 0).toFixed(2)} · model nova-3`;
-    result.appendChild(meta);
-  } catch (e) {
-    box.style.display = "block";
-    box.textContent = `Transcription failed: ${e.message}`;
-  } finally {
-    btn.disabled = false;
-    btn.lastChild.textContent = "Transcribe";
-  }
-});
-</script>
 </body>
 </html>

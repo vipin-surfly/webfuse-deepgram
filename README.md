@@ -69,7 +69,8 @@ In Webfuse Studio → Space → Extensions → Deepgram Live Captions → settin
 
 ```
 webfuse-deepgram/
-├── site/index.html            the whole demo page (single file)
+├── site/index.html            landing page — the agent anatomy pitch (session startup page)
+├── site/demo.html             hands-on demo: live mic captions + file transcription
 ├── server.js                  zero-dep local server: static + /api/token
 ├── extension/                 Webfuse extension (floating caption panel)
 │   ├── manifest.json          env: DEEPGRAM_API_KEY, TOKEN_URL
