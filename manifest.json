@@ -1,0 +1,25 @@
+{
+    "manifest_version": 3,
+    "version": "1.0.0",
+    "name": "Deepgram Live Captions",
+    "homepage_url": "https://github.com/vipin-surfly/webfuse-deepgram",
+    "host_permissions": ["<all_urls>"],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "env": [
+        {
+            "key": "DEEPGRAM_API_KEY",
+            "value": "",
+            "description": "POC mode: paste a Deepgram API key here (Webfuse Studio → Space → Extensions → settings). It is sent from each participant's browser straight to api.deepgram.com. For production, leave this empty and use TOKEN_URL with a Member-permission key that can mint short-lived grants."
+        },
+        {
+            "key": "TOKEN_URL",
+            "value": "",
+            "description": "Optional HTTPS endpoint returning {token, mode}: a short-lived Deepgram credential minted via POST /v1/auth/grant (see server.js in the repo for a self-hostable implementation). Takes precedence over nothing — DEEPGRAM_API_KEY is checked first. The endpoint must send Access-Control-Allow-Origin: *."
+        }
+    ]
+}
