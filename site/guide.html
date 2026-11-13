@@ -255,7 +255,7 @@
       </p>
       <div class="ctas">
         <a class="btn primary" href="#proof">See it working (verified)</a>
-        <a class="btn ghost" href="https://github.com/vipin-surfly/webfuse-deepgram">Clone the POC</a>
+        <a class="btn ghost" href="https://github.com/vipin-surfly/webfuse-deepgram">Clone the demo</a>
       </div>
     </header>
 
@@ -351,14 +351,14 @@
       </div>
       <p class="secsub" style="margin-top:16px">
         Steps 2, 3 and 5 are one Deepgram Voice Agent WebSocket. Step 4 is Deepgram’s client-side
-        <b>function calling</b> bridged to Webfuse’s session API — the POC below proves the whole chain.
+        <b>function calling</b> bridged to Webfuse’s session API — the demo below proves the whole chain.
       </p>
     </section>
 
     <!-- ============ proof ============ -->
     <section id="proof">
       <span class="eyebrow"><span class="pip"></span>Receipts, not promises</span>
-      <h2 class="sec">The POC — a talking, browsing agent in a floating panel</h2>
+      <h2 class="sec">A talking, browsing agent in a floating panel</h2>
       <p class="secsub">
         A Webfuse extension that floats over every page of a live session. One click, and a voice
         agent runs inside it: it greets you, listens, answers — and <b>navigates the shared
@@ -458,7 +458,7 @@ ws.<span class="fn">send</span>(JSON.<span class="fn">stringify</span>({ <span c
       <span class="eyebrow blue"><span class="pip"></span>Set it up — the 15-minute path</span>
       <h2 class="sec">Configuration: Deepgram + Webfuse Studio</h2>
       <p class="secsub">
-        Everything below is the exact configuration this POC runs on. Five minutes on the
+        Everything below is the exact configuration this demo runs on. Five minutes on the
         Deepgram side, ten in Webfuse Studio — then open a session and talk. Screens are rendered
         recreations; the field values are real.
       </p>
@@ -473,7 +473,7 @@ ws.<span class="fn">send</span>(JSON.<span class="fn">stringify</span>({ <span c
               Deepgram-side configuration there is — Nova-3, Aura-2 and the managed
               gpt-4o-mini brain need no enablement or separate keys.</p>
             <ul>
-              <li><b>POC:</b> any key works.</li>
+              <li><b>Demo:</b> any key works.</li>
               <li><b>Production:</b> a <b>Member-permission</b> key — only those can mint
                 short-lived grants via <code>POST /v1/auth/grant</code>. (Regular keys get
                 <code>403 FORBIDDEN</code> there — we hit exactly that.)</li>
@@ -513,7 +513,7 @@ ws.<span class="fn">send</span>(JSON.<span class="fn">stringify</span>({ <span c
             <p><b>Studio → your Space → Extensions → Deepgram Live Captions → settings</b>.
               Exactly one of the two settings:</p>
             <ul>
-              <li><b>POC:</b> paste the Step-1 key into <code>DEEPGRAM_API_KEY</code>. It travels
+              <li><b>Demo:</b> paste the Step-1 key into <code>DEEPGRAM_API_KEY</code>. It travels
                 from each participant's browser straight to Deepgram — fine for a demo key.</li>
               <li><b>Production:</b> leave it empty and set <code>TOKEN_URL</code> to your
                 hosted <code>server.js</code> (<code>https://your-host/api/token</code>), which
@@ -526,7 +526,7 @@ ws.<span class="fn">send</span>(JSON.<span class="fn">stringify</span>({ <span c
             <span class="steptag">Webfuse Studio · step 5 · optional</span>
             <h4>Set the session startup page</h4>
             <p><b>Studio → your Space → Session settings → startup page → custom URL</b> —
-              point it at the POC landing page so every session opens on the story, with the
+              point it at the landing page so every session opens on the story, with the
               panel floating over it.</p>
             <span class="pill">~1 min</span>
           </div>
@@ -600,11 +600,11 @@ ws.<span class="fn">send</span>(JSON.<span class="fn">stringify</span>({ <span c
             <div class="bar"><i></i><i></i><i></i><span class="t">Extension settings — Deepgram Live Captions</span></div>
             <div class="addr"><b>app.webfuse.com</b>/spaces/deepgram-voice-agent/extensions/settings</div>
             <div class="bd">
-              <div class="frow"><label>DEEPGRAM_API_KEY</label><div class="inp">1c62••••••••••••••••••••••f350 <span style="color:var(--text-soft)">— POC mode</span></div></div>
+              <div class="frow"><label>DEEPGRAM_API_KEY</label><div class="inp">1c62••••••••••••••••••••••f350 <span style="color:var(--text-soft)">— demo key</span></div></div>
               <div class="frow"><label>TOKEN_URL</label><div class="inp hint">https://your-host/api/token — production mode</div></div>
               <div class="btnrow"><span class="sbtn p">Save</span></div>
               <div class="note"><b>One or the other:</b> the panel checks
-                <code>DEEPGRAM_API_KEY</code> first, then <code>TOKEN_URL</code>. The POC key is
+                <code>DEEPGRAM_API_KEY</code> first, then <code>TOKEN_URL</code>. The pasted key is
                 readable by session participants from devtools — rotate it, or go production:
                 host <code>server.js</code> from the repo with a Member key in its env.</div>
             </div>
@@ -627,7 +627,7 @@ ws.<span class="fn">send</span>(JSON.<span class="fn">stringify</span>({ <span c
             <div class="addr"><b>webfu.se</b>/+deepgram-voice-agent</div>
             <div class="bd">
               <div class="list">
-                <div class="li"><span class="nm">🟢 Voice Agent panel<span class="sub">status: Listening · POC key</span></span><span class="badge on">floating</span></div>
+                <div class="li"><span class="nm">🟢 Voice Agent panel<span class="sub">status: Listening · demo key</span></span><span class="badge on">floating</span></div>
                 <div class="li"><span class="nm">“Hello! I am the Webfuse and Deepgram demo agent…”<span class="sub">agent · greeting · Aura-2 voice</span></span><span class="badge on">audio</span></div>
                 <div class="li"><span class="nm">“Go to website, google.com.”<span class="sub">you · Nova-3 with keyterms</span></span><span class="badge on">heard</span></div>
                 <div class="li"><span class="nm">navigate_to_website → relocate()<span class="sub">shared tab navigates, live, for everyone</span></span><span class="badge on">acted</span></div>
@@ -646,13 +646,13 @@ ws.<span class="fn">send</span>(JSON.<span class="fn">stringify</span>({ <span c
         several panels floating, or “No credential configured”.
       </div>
 
-      <div class="codehead" style="margin-top:26px">POC vs production at a glance</div>
+      <div class="codehead" style="margin-top:26px">Demo vs production at a glance</div>
       <table>
-        <tr><th></th><th>POC — one afternoon</th><th>Production</th></tr>
+        <tr><th></th><th>Demo — one afternoon</th><th>Production</th></tr>
         <tr><td>Credential setting</td><td><code>DEEPGRAM_API_KEY</code> — key pasted in Studio</td><td><code>TOKEN_URL</code> — your hosted <code>server.js</code></td></tr>
         <tr><td>Deepgram key type</td><td>Any key</td><td>Member-permission key (can mint grants)</td></tr>
         <tr><td>Who can read the key</td><td>Session participants (devtools) — use a demo key, rotate it</td><td>Nobody — short-lived grants, key stays server-side</td></tr>
-        <tr><td>Panel badge</td><td>“POC key” (amber)</td><td>“temp token” (green)</td></tr>
+        <tr><td>Panel badge</td><td>Amber — demo key</td><td>Green — temp token</td></tr>
         <tr><td>Anything else to change?</td><td>No</td><td>No — the panel switches modes by what the endpoint returns</td></tr>
       </table>
 
@@ -704,7 +704,7 @@ ws.<span class="fn">send</span>(JSON.<span class="fn">stringify</span>({ <span c
         <div>
           <h3 style="font-size:15.5px; font-weight:800;">Take the whole thing</h3>
           <p style="color:var(--text-soft); font-size:13.5px; margin-top:5px;">
-            The POC is a public repo: the Webfuse extension (voice agent panel with function
+            Everything is a public repo: the Webfuse extension (voice agent panel with function
             calling), a caption-only mode, a token-endpoint reference server, and the engineering
             guide with every gotcha we hit. Clone it, swap in your Deepgram key, install the
             extension on a Webfuse Space — <b>~15 minutes to a talking agent that browses with
