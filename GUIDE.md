@@ -161,6 +161,30 @@ extension — the badge flips to green with no code changes.
 8. **Stop** sends `Finalize` (flushes pending audio into one last result),
    waits ~900 ms, then closes the socket and the audio graph.
 
+### 4.1b The voice agent (extension panel, "Talk" button)
+
+Same mic engine, different socket — `wss://agent.deepgram.com/v1/agent/converse`
+with the same subprotocol credential:
+
+1. On open the server sends `Welcome`; the panel replies with a
+   `Settings` message: audio in linear16 @ `ctx.sampleRate`, audio out
+   linear16 @ 24 kHz, `listen` Nova-3 + keyterms, `think` managed
+   `open_ai/gpt-4o-mini` (no provider key) + a short demo prompt,
+   `speak` `aura-2-thalia-en`, and a `greeting`.
+2. `SettingsApplied` connects the mic to the worklet (the greeting
+   speech usually arrives right after).
+3. The conversation loop: `ConversationText` messages render as chat
+   bubbles (`user` → right, `assistant` → left); binary frames are the
+   agent's 24 kHz PCM, queued on a dedicated playback context;
+   `UserStartedSpeaking` interrupts playback (barge-in);
+   `AgentThinking`/`AgentAudioDone` drive the status line.
+4. The mic streams continuously — turn-taking (end-of-turn detection,
+   speculative thinking) is handled server-side.
+5. **Stop** closes the socket and both audio contexts.
+
+Verified end-to-end against the live API (greeting + a full
+listen→think→speak turn) — transcript and timings in the repo history.
+
 ### 4.2 File transcription
 
 1. Pick (or drop) a file — an `<audio>` preview appears.
@@ -292,6 +316,35 @@ Each of these cost real debugging time; all are fixed or designed around.
    `host_permissions` (CSP `connect-src`), and fetches to `TOKEN_URL` need
    CORS `*` from that endpoint. A raw key in extension settings is
    readable by participants from devtools — POC only.
+10. **The Voice Agent endpoint is `wss://agent.deepgram.com/v1/agent/converse`.**
+    Not `/v1/agent`, and not on `api.deepgram.com` — both fail the
+    WebSocket handshake (404/1006). The docs pages never spell the URL
+    out; the `@deepgram/sdk` source (`environments.mjs` +
+    `agent/v1/client/Client.mjs`) is where the real endpoint lives.
+    Subprotocol auth `["token", <credential>]` works there, same as
+    `/v1/listen` — which is what makes the whole thing possible from a
+    browser popup.
+11. **The Deepgram-hosted LLM (`think-fast`) is Early Access** — only for
+    contract customers enrolled in the program; this key's account is not
+    (`GET agent.deepgram.com/v1/agent/settings/think/models` lists no
+    `deepgram` provider). The working equivalent with zero extra keys:
+    **managed OpenAI** — `think.provider {"type": "open_ai", "model":
+    "gpt-4o-mini"}` with no endpoint and no OpenAI key; Deepgram hosts the
+    model and bills it as agent usage.
+12. **The converse socket wants continuous binary frames.** After the
+    input audio ran out, sending only `KeepAlive` JSON never finalized the
+    user's turn (`CLIENT_MESSAGE_TIMEOUT`: "make sure you are sending
+    binary messages containing user speech"). A live mic always streams,
+    so the panel is fine; in headless tests you must keep sending (even
+    silent) PCM frames.
+13. **Two `AudioContext`s for the agent.** Mic capture runs at 16 kHz but
+    the agent's speech comes back as linear16 @ 24 kHz, and one context
+    has one sample rate — playback gets its own 24 kHz context with a
+    scheduled buffer queue (`nextTime = max(now, nextTime)`).
+14. **Binary frames are `Blob` in node, `ArrayBuffer` in browsers.**
+    undici's `WebSocket` delivers binary as `Blob` (tests:
+    `await ev.data.arrayBuffer()`); a browser popup delivers `ArrayBuffer`
+    after `ws.binaryType = "arraybuffer"`.
 
 ---
 

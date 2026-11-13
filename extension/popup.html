@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Captions</title>
+  <title>Voice Agent</title>
   <style>
     :root {
       --bg: light-dark(#ffffff, #0d1220);
@@ -13,6 +13,7 @@
       --border: light-dark(#e4e7eb, #1e2a3f);
       --accent: light-dark(#0b8f68, #2ee6a8);
       --accent-ink: light-dark(#ffffff, #06251a);
+      --you: light-dark(#0b72d1, #1c3f63);
       --live: #1a9c5b;
       --err: #c2372f;
       --amber: #a06a12;
@@ -61,14 +62,20 @@
       width: 84px; height: 84px;
       border-radius: 50%; border: none;
       background: var(--accent); color: var(--accent-ink);
-      font-size: 30px; cursor: pointer;
+      cursor: pointer;
       box-shadow: 0 8px 22px rgba(26, 156, 91, 0.35);
       transition: transform 0.1s ease;
     }
     #mic:hover { transform: scale(1.04); }
     #mic:disabled { opacity: 0.6; cursor: default; transform: none; }
     #mic .sub { display: block; font-size: 10.5px; font-weight: 700; margin-top: 2px; }
-    #hint { color: var(--text-soft); font-size: 12.5px; text-align: center; max-width: 270px; }
+    #capOnly {
+      border: 1px solid var(--border); background: transparent; color: var(--text-soft);
+      border-radius: 999px; padding: 7px 16px; font: inherit; font-size: 12.5px;
+      font-weight: 600; cursor: pointer;
+    }
+    #capOnly:hover { color: var(--text); border-color: var(--text-soft); }
+    #hint { color: var(--text-soft); font-size: 12.5px; text-align: center; max-width: 280px; }
     #err { color: var(--err); font-size: 12.5px; text-align: center; max-width: 280px; display: none; }
 
     #live { display: none; flex: 1 1 auto; flex-direction: column; min-height: 0; }
@@ -83,6 +90,24 @@
     .interim { color: var(--text-soft); font-style: italic; padding: 0 11px; }
     .interim::after { content: "▍"; color: var(--accent); animation: blink 1s step-end infinite; }
     @keyframes blink { 50% { opacity: 0; } }
+
+    .line { max-width: 88%; padding: 8px 12px; border-radius: 12px; font-size: 13.5px; }
+    .line .who {
+      display: block; font-size: 10.5px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 2px; color: var(--text-soft);
+    }
+    .line.you {
+      align-self: flex-end;
+      background: var(--you); color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .line.agent {
+      align-self: flex-start;
+      background: var(--bg-soft); border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+
     .meter { flex: 0 0 auto; height: 3px; background: var(--bg-soft); margin: 0 14px; border-radius: 999px; overflow: hidden; }
     .meter > i { display: block; height: 100%; width: 0%; background: var(--live); transition: width 0.09s linear; }
 
@@ -106,19 +131,21 @@
 <body>
   <header>
     <span class="dot" id="dot"></span>
-    <h1>Live Captions</h1>
+    <h1>Voice Agent</h1>
     <span class="mode" id="mode" hidden></span>
     <span class="status" id="status">Ready</span>
   </header>
 
   <div id="screen">
-    <button id="mic" title="Start live captions">
+    <button id="mic" title="Talk to the agent">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="margin-bottom:-4px"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3z"/><path d="M19 11a1 1 0 1 0-2 0 5 5 0 0 1-10 0 1 1 0 1 0-2 0 7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11z"/></svg>
-      <span class="sub" id="micLabel">Start</span>
+      <span class="sub" id="micLabel">Talk</span>
     </button>
-    <p id="hint">One click starts real-time captions of your microphone,
-       powered by Deepgram Nova-3. Your audio goes straight from this
-       browser to Deepgram — only text renders in the session.</p>
+    <p id="hint">One click and the agent is live: it hears you (Nova-3), thinks
+       (gpt-4o-mini, managed by Deepgram) and answers out loud (Aura-2 voice).
+       Your audio goes straight from this browser to Deepgram — only text
+       renders in the session.</p>
+    <button id="capOnly" title="Live captions without the agent">captions only</button>
     <p id="err"></p>
   </div>
 
@@ -127,7 +154,7 @@
     <div class="meter"><i id="level"></i></div>
     <footer>
       <span class="stats" id="stats"></span>
-      <button id="stop" title="Stop captions">Stop</button>
+      <button id="stop" title="End the conversation">Stop</button>
     </footer>
   </div>
 
