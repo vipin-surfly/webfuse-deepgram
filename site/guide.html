@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>For Deepgram FDEs — add eyes and hands to your voice agents</title>
+  <meta name="description" content="Your Deepgram voice agents already hear and speak. Webfuse gives them a live, shared browser: eyes and hands on any website, with the customer watching.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230d1220'/><path d='M9 12h2v9H9zM14 8h2v17h-2zM19 13h2v7h-2zM24 11h2v11h-2z' fill='%232ee6a8'/></svg>">
+  <style>
+    :root {
+      --bg: #0b0f1a;
+      --bg-soft: #111827;
+      --card: #0f1626;
+      --border: #1e2a3f;
+      --text: #e8edf5;
+      --text-soft: #8b96a8;
+      --green: #2ee6a8;
+      --green-dim: #1c7a5c;
+      --blue: #4da3ff;
+      --blue-dim: #1f4d75;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif;
+      background:
+        radial-gradient(1100px 500px at 85% -10%, rgba(46, 230, 168, 0.07), transparent 60%),
+        radial-gradient(900px 500px at -10% 10%, rgba(77, 163, 255, 0.07), transparent 60%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 0 22px; }
+    a { color: inherit; }
+
+    nav { display: flex; align-items: center; gap: 12px; padding: 20px 0; }
+    nav .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+    nav .brand .mark { width: 26px; height: 26px; border-radius: 7px; background: #0d1220; border: 1px solid var(--border); display: grid; place-items: center; }
+    nav .brand .mark svg { width: 16px; height: 16px; }
+    nav .brand .x { color: var(--text-soft); font-weight: 500; }
+    nav .spacer { flex: 1; }
+    nav a.lnk { color: var(--text-soft); text-decoration: none; font-size: 13.5px; font-weight: 600; }
+    nav a.lnk:hover { color: var(--text); }
+
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--green); border: 1px solid var(--green-dim); border-radius: 999px; padding: 5px 13px;
+      background: rgba(46, 230, 168, 0.06);
+    }
+    .eyebrow.blue { color: var(--blue); border-color: var(--blue-dim); background: rgba(77, 163, 255, 0.06); }
+    .eyebrow .pip { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+    .eyebrow.blue .pip { background: var(--blue); }
+
+    header.hero { padding: 54px 0 42px; max-width: 800px; }
+    header.hero h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.12; font-weight: 800; letter-spacing: -0.025em; margin: 22px 0 0; }
+    header.hero h1 .dg { color: var(--green); }
+    header.hero h1 .wf { color: var(--blue); }
+    header.hero p.lede { color: var(--text-soft); font-size: 17px; margin-top: 18px; max-width: 660px; }
+    header.hero p.lede b { color: var(--text); }
+    header.hero .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+    a.btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 11px 22px; font-size: 14.5px; font-weight: 700; text-decoration: none; transition: transform 0.08s ease; }
+    a.btn:hover { transform: translateY(-1px); }
+    a.btn.primary { background: var(--green); color: #06251a; box-shadow: 0 6px 22px rgba(46, 230, 168, 0.25); }
+    a.btn.ghost { color: var(--text); border: 1px solid var(--border); background: rgba(17, 24, 39, 0.6); }
+    a.btn.ghost:hover { border-color: var(--text-soft); }
+
+    section { padding: 30px 0; }
+    h2.sec { font-size: clamp(20px, 3vw, 27px); font-weight: 800; letter-spacing: -0.015em; margin-top: 10px; }
+    p.secsub { color: var(--text-soft); margin-top: 8px; max-width: 600px; font-size: 15px; }
+    p.secsub b { color: var(--text); }
+
+    /* ---- halves ---- */
+    .halves { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 26px; }
+    @media (max-width: 760px) { .halves { grid-template-columns: 1fr; } }
+    .half { border: 1px solid var(--border); border-radius: 16px; background: var(--card); padding: 22px; }
+    .half .colhead { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-soft); }
+    .half .colhead i { width: 8px; height: 8px; border-radius: 50%; }
+    .half.dg { border-color: rgba(46, 230, 168, 0.25); }
+    .half.dg .colhead i { background: var(--green); }
+    .half.wf { border-color: rgba(77, 163, 255, 0.25); }
+    .half.wf .colhead i { background: var(--blue); }
+    .half h3 { font-size: 17px; font-weight: 800; margin-top: 10px; }
+    .half p.desc { color: var(--text-soft); font-size: 13.5px; margin-top: 6px; }
+    .sense { display: flex; gap: 13px; align-items: flex-start; padding: 13px 0; border-top: 1px solid var(--border); margin-top: 13px; }
+    .sense:first-of-type { border-top: none; }
+    .sense .icon { flex: 0 0 auto; width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; }
+    .half.dg .sense .icon { background: rgba(46, 230, 168, 0.1); color: var(--green); }
+    .half.wf .sense .icon { background: rgba(77, 163, 255, 0.1); color: var(--blue); }
+    .sense h4 { font-size: 14.5px; font-weight: 800; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .sense .tech { font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 999px; padding: 2px 9px; }
+    .half.dg .sense .tech { color: var(--green); background: rgba(46, 230, 168, 0.09); }
+    .half.wf .sense .tech { color: var(--blue); background: rgba(77, 163, 255, 0.09); }
+    .sense p { color: var(--text-soft); font-size: 13px; margin-top: 4px; }
+
+    /* ---- generic cards ---- */
+    .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+    @media (max-width: 760px) { .cards3 { grid-template-columns: 1fr; } }
+    .card { border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 18px 20px; }
+    .card .icon { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; background: rgba(77, 163, 255, 0.1); color: var(--blue); margin-bottom: 12px; }
+    .card h4 { font-size: 15px; font-weight: 800; }
+    .card p { color: var(--text-soft); font-size: 13px; margin-top: 5px; }
+
+    /* ---- loop ---- */
+    .loop { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+    .step { flex: 1 1 150px; min-width: 150px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 14px 16px; }
+    .step .n { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; font-size: 11.5px; font-weight: 800; margin-bottom: 9px; background: rgba(232, 237, 245, 0.08); color: var(--text); }
+    .step h4 { font-size: 13.5px; font-weight: 800; }
+    .step p { color: var(--text-soft); font-size: 12px; margin-top: 3px; }
+    .step .who { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 9px; }
+    .step.dg .who { color: var(--green); }
+    .step.wf .who { color: var(--blue); }
+    .step.you .who { color: var(--text-soft); }
+
+    /* ---- proof panel ---- */
+    .proof { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; margin-top: 26px; align-items: start; }
+    @media (max-width: 820px) { .proof { grid-template-columns: 1fr; } }
+    .panel-mock {
+      border: 1px solid var(--border); border-radius: 16px; background: var(--card);
+      overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    }
+    .panel-mock .pm-head { display: flex; align-items: center; gap: 8px; padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 800; }
+    .panel-mock .pm-head .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px rgba(46, 230, 168, 0.8); }
+    .panel-mock .pm-head .st { margin-left: auto; font-size: 11px; font-weight: 600; color: var(--text-soft); }
+    .pm-body { padding: 14px; display: flex; flex-direction: column; gap: 9px; font-size: 13px; }
+    .pm-line { max-width: 90%; padding: 7px 11px; border-radius: 11px; }
+    .pm-line .who { display: block; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1px; color: rgba(255,255,255,0.55); }
+    .pm-line.you { align-self: flex-end; background: #1c3f63; color: #fff; border-bottom-right-radius: 4px; }
+    .pm-line.agent { align-self: flex-start; background: var(--bg-soft); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+    .pm-line.agent .who { color: var(--text-soft); }
+    .pm-tool {
+      align-self: center; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px;
+      color: var(--green); background: rgba(46, 230, 168, 0.07); border: 1px dashed var(--green-dim);
+      border-radius: 9px; padding: 7px 11px; max-width: 96%;
+    }
+    .pm-tool .lbl { font-family: inherit; font-size: 9.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-soft); display: block; margin-bottom: 2px; }
+    .pm-foot { padding: 10px 14px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-soft); display: flex; justify-content: space-between; }
+    .proof-notes { display: flex; flex-direction: column; gap: 12px; }
+    .proof-notes .note { border: 1px solid var(--border); border-radius: 14px; background: var(--card); padding: 14px 16px; font-size: 13.5px; color: var(--text-soft); }
+    .proof-notes .note b { color: var(--text); }
+    .proof-notes .note .tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 999px; padding: 2px 8px; margin-bottom: 6px; }
+    .proof-notes .note .tag.g { color: var(--green); background: rgba(46, 230, 168, 0.09); }
+    .proof-notes .note .tag.b { color: var(--blue); background: rgba(77, 163, 255, 0.09); }
+
+    /* ---- code ---- */
+    pre {
+      background: #0a0e17; border: 1px solid var(--border); border-radius: 14px;
+      padding: 18px 20px; overflow-x: auto; margin-top: 18px;
+      font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.65;
+      color: #c8d3e4;
+    }
+    pre .c { color: #5c6a80; }       /* comment */
+    pre .k { color: #4da3ff; }       /* keyword / key */
+    pre .s { color: #2ee6a8; }       /* string */
+    pre .fn { color: #e8b96a; }      /* function */
+    .codehead { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-soft); margin-top: 22px; }
+
+    /* ---- table ---- */
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+    th { text-align: left; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-soft); padding: 9px 12px; border-bottom: 1px solid var(--border); }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-soft); vertical-align: top; }
+    td:first-child { color: var(--text); font-weight: 600; white-space: nowrap; }
+    code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; background: rgba(232, 237, 245, 0.07); border-radius: 5px; padding: 1px 6px; }
+
+    footer { margin: 46px 0 30px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--text-soft); font-size: 12.5px; }
+    footer a { color: var(--text-soft); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <nav>
+      <div class="brand">
+        <span class="mark"><svg viewBox="0 0 32 32"><path d="M9 12h2v9H9zM14 8h2v17h-2zM19 13h2v7h-2zM24 11h2v11h-2z" fill="#2ee6a8"/></svg></span>
+        Deepgram <span class="x">×</span> Webfuse
+      </div>
+      <div class="spacer"></div>
+      <a class="lnk" href="./index.html">The concept</a>
+      <a class="lnk" href="./demo.html">Live demo</a>
+      <a class="lnk" href="https://github.com/vipin-surfly/webfuse-deepgram">GitHub</a>
+    </nav>
+
+    <header class="hero">
+      <span class="eyebrow blue"><span class="pip"></span>Field guide for Deepgram FDEs</span>
+      <h1>Your voice agents hear and speak.<br>Webfuse gives them <span class="wf">eyes</span> and <span class="wf">hands</span>.</h1>
+      <p class="lede">
+        You already deploy the <b>ears</b> (Nova-3 / Flux STT) and the <b>mouth</b> (Aura / Flux TTS,
+        Voice Agent API). Webfuse adds the missing half of the body: a <b>live, shared browser
+        session</b> the agent can see and drive — on any website, with zero integration from the
+        site, while the customer watches every move.
+      </p>
+      <div class="ctas">
+        <a class="btn primary" href="#proof">See it working (verified)</a>
+        <a class="btn ghost" href="https://github.com/vipin-surfly/webfuse-deepgram">Clone the POC</a>
+      </div>
+    </header>
+
+    <!-- ============ the two halves ============ -->
+    <section id="halves">
+      <h2 class="sec">One body, two vendors, zero overlap</h2>
+      <p class="secsub">Deepgram owns voice. Webfuse owns the browser. Together they close the loop
+        every voice-agent deployment is missing: speech in, <b>action</b> out, on-screen.</p>
+
+      <div class="halves">
+        <div class="half dg">
+          <div class="colhead"><i></i>Your half — Deepgram</div>
+          <h3>The senses of voice</h3>
+          <p class="desc">What you already deploy today.</p>
+          <div class="sense">
+            <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11.5" rx="3"/><path d="M5 10.5v.5a7 7 0 0 0 14 0v-.5"/><path d="M12 18.5V22"/><path d="M8.5 22h7"/></svg></div>
+            <div>
+              <h4>Ears <span class="tech">Nova-3 / Flux STT</span></h4>
+              <p>Streaming speech-to-text, interim results, keyterm boosting, server-side end-of-turn detection.</p>
+            </div>
+          </div>
+          <div class="sense">
+            <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.7 8.4 8.9 8.9 0 0 1-3.6-.8L3 21l1.9-5a8.1 8.1 0 0 1-.9-3.6A8.4 8.4 0 0 1 12.4 3h.2a8.4 8.4 0 0 1 8.4 8.5z"/></svg></div>
+            <div>
+              <h4>Mouth <span class="tech">Aura / Flux TTS</span></h4>
+              <p>Low-latency streamed speech — plus the Voice Agent API that fuses listen → think → speak on one WebSocket.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="half wf">
+          <div class="colhead"><i></i>The missing half — Webfuse</div>
+          <h3>The body in the browser</h3>
+          <p class="desc">What your agents are missing.</p>
+          <div class="sense">
+            <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5.5 12 5.5 22.5 12 22.5 12 18.5 18.5 12 18.5 1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/></svg></div>
+            <div>
+              <h4>Eyes <span class="tech">Page perception</span></h4>
+              <p>DOM snapshots, the accessibility tree, page info — the agent sees the page the customer sees. Point a vision or MCP agent at it and it can read any site.</p>
+            </div>
+          </div>
+          <div class="sense">
+            <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 7.5-6.3 1.7L9.5 19 5 3z"/><path d="M13.5 13.5l4.5 4.5"/></svg></div>
+            <div>
+              <h4>Hands <span class="tech">Session control</span></h4>
+              <p>Navigate, click, type, scroll — on any website, no SDK or integration from the site. Every action happens in the live session the customer is watching.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ what webfuse is ============ -->
+    <section>
+      <span class="eyebrow blue"><span class="pip"></span>What Webfuse actually is</span>
+      <h2 class="sec">A shared browser, not a headless one</h2>
+      <p class="secsub">The difference that changes the product: the customer is <b>inside</b> the
+        session with the agent. Not watching a screencast, not trusting a black box — co-browsing.</p>
+      <div class="cards3">
+        <div class="card">
+          <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></div>
+          <h4>One live browser session</h4>
+          <p>A virtual browser in the cloud. The customer joins from any device; everyone in the session sees and can control the same pages.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg></div>
+          <h4>Works on any website</h4>
+          <p>No SDK, no partner integration, no site changes. If it loads in a browser, the agent can see it and use it — logins, carts, docs, internal tools.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+          <h4>Automation built in</h4>
+          <p>A per-session MCP server and an extension API (<code>browser.webfuseSession</code>) expose navigate, click, type and page perception to any agent.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ the loop ============ -->
+    <section>
+      <span class="eyebrow"><span class="pip"></span>The loop you can finally ship</span>
+      <h2 class="sec">One turn of a complete voice agent</h2>
+      <div class="loop">
+        <div class="step you"><div class="n">1</div><h4>The customer speaks</h4><p>“Go to my Google Docs and start a new doc.”</p><div class="who">customer</div></div>
+        <div class="step dg"><div class="n">2</div><h4>Ears transcribe</h4><p>Streaming STT finalizes the turn.</p><div class="who">deepgram</div></div>
+        <div class="step dg"><div class="n">3</div><h4>Brain decides</h4><p>The LLM plans — and emits a function call.</p><div class="who">deepgram agent</div></div>
+        <div class="step wf"><div class="n">4</div><h4>Hands act</h4><p>The session navigates, clicks, types — live, on screen, for everyone.</p><div class="who">webfuse</div></div>
+        <div class="step dg"><div class="n">5</div><h4>Mouth answers</h4><p>“Done — I’ve opened a blank doc for you.”</p><div class="who">deepgram</div></div>
+      </div>
+      <p class="secsub" style="margin-top:16px">
+        Steps 2, 3 and 5 are one Deepgram Voice Agent WebSocket. Step 4 is Deepgram’s client-side
+        <b>function calling</b> bridged to Webfuse’s session API — the POC below proves the whole chain.
+      </p>
+    </section>
+
+    <!-- ============ proof ============ -->
+    <section id="proof">
+      <span class="eyebrow"><span class="pip"></span>Receipts, not promises</span>
+      <h2 class="sec">The POC — a talking, browsing agent in a floating panel</h2>
+      <p class="secsub">
+        A Webfuse extension that floats over every page of a live session. One click, and a voice
+        agent runs inside it: it greets you, listens, answers — and <b>navigates the shared
+        browser</b> when you ask. This is the actual exchange from the end-to-end test against
+        the live Deepgram API.
+      </p>
+
+      <div class="proof">
+        <div class="panel-mock">
+          <div class="pm-head"><span class="dot"></span> Voice Agent <span class="st">Listening</span></div>
+          <div class="pm-body">
+            <div class="pm-line agent"><span class="who">agent</span>Hello! I am the Webfuse and Deepgram demo agent. How can I help you today?</div>
+            <div class="pm-line you"><span class="who">you</span>Go to website, google.com.</div>
+            <div class="pm-tool"><span class="lbl">tool call → webfuse</span>navigate_to_website({"url":"google.com"})<br>→ browser.webfuseSession.relocate("https://google.com")</div>
+            <div class="pm-line agent"><span class="who">agent</span>I've navigated to Google. What would you like to do next?</div>
+          </div>
+          <div class="pm-foot"><span>00:42 · 27 words</span><span>gpt-4o-mini · aura-2 · nova-3</span></div>
+        </div>
+
+        <div class="proof-notes">
+          <div class="note"><span class="tag g">deepgram side</span>
+            <b>Voice Agent API</b> on <code>wss://agent.deepgram.com/v1/agent/converse</code>:
+            Nova-3 listening with keyterms, gpt-4o-mini <b>managed by Deepgram</b> (no provider key),
+            Aura-2 speaking, and client-side <b>function calling</b> driving the loop.
+          </div>
+          <div class="note"><span class="tag b">webfuse side</span>
+            The floating panel is a <b>Webfuse extension</b>. When Deepgram sends
+            <code>FunctionCallRequest(navigate_to_website)</code>, the panel executes
+            <code>browser.webfuseSession.relocate(url)</code> — the co-browsed tab moves for every
+            participant — and replies with a <code>FunctionCallResponse</code>.
+          </div>
+          <div class="note"><span class="tag g">barge-in</span>
+            When the customer starts speaking, Deepgram fires <code>UserStartedSpeaking</code> —
+            playback stops, and any speculative tool call is cancelled mid-flight.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ the contract ============ -->
+    <section>
+      <span class="eyebrow"><span class="pip"></span>The contract, for FDEs</span>
+      <h2 class="sec">Everything you need to wire it yourself</h2>
+      <p class="secsub">If you can open a WebSocket, you already know most of this. The Deepgram
+        half is your home turf; the Webfuse half is three API calls.</p>
+
+      <div class="codehead">1 · Connect — browser auth via subprotocol (no headers needed)</div>
+      <pre><span class="c">// browsers can't set Authorization headers on a WebSocket; Deepgram's</span>
+<span class="c">// subprotocol trick rides the credential instead. Grants work here too.</span>
+<span class="k">const</span> ws = <span class="k">new</span> <span class="fn">WebSocket</span>(
+  <span class="s">"wss://agent.deepgram.com/v1/agent/converse"</span>,  <span class="c">// ← converse. /v1/agent 404s</span>
+  [<span class="s">"token"</span>, credential]
+);</pre>
+
+      <div class="codehead">2 · Configure — one Settings message after Welcome</div>
+      <pre>{
+  <span class="k">"type"</span>: <span class="s">"Settings"</span>,
+  <span class="k">"audio"</span>: { <span class="k">"input"</span>:  { <span class="k">"encoding"</span>: <span class="s">"linear16"</span>, <span class="k">"sample_rate"</span>: <span class="s">16000</span> },
+              <span class="k">"output"</span>: { <span class="k">"encoding"</span>: <span class="s">"linear16"</span>, <span class="k">"sample_rate"</span>: <span class="s">24000</span>, <span class="k">"container"</span>: <span class="s">"none"</span> } },
+  <span class="k">"agent"</span>: {
+    <span class="k">"listen"</span>: { <span class="k">"provider"</span>: { <span class="k">"type"</span>: <span class="s">"deepgram"</span>, <span class="k">"model"</span>: <span class="s">"nova-3"</span>, <span class="k">"keyterms"</span>: [<span class="s">"Webfuse"</span>] } },
+    <span class="k">"think"</span>:  { <span class="k">"provider"</span>: { <span class="k">"type"</span>: <span class="s">"open_ai"</span>, <span class="k">"model"</span>: <span class="s">"gpt-4o-mini"</span> },  <span class="c">// managed — no OpenAI key</span>
+              <span class="k">"prompt"</span>: <span class="s">"…never claim you cannot browse…"</span>,
+              <span class="k">"functions"</span>: [ { <span class="k">"name"</span>: <span class="s">"navigate_to_website"</span>, <span class="k">"parameters"</span>: { <span class="k">"url"</span>: <span class="s">"string"</span> } } ] },
+    <span class="k">"speak"</span>:  { <span class="k">"provider"</span>: { <span class="k">"type"</span>: <span class="s">"deepgram"</span>, <span class="k">"model"</span>: <span class="s">"aura-2-thalia-en"</span> } }
+  }
+}</pre>
+
+      <div class="codehead">3 · Act — bridge Deepgram's function calls to the Webfuse session</div>
+      <pre><span class="c">// Deepgram sends this when the LLM decides to act:</span>
+{ <span class="s">"type"</span>: <span class="s">"FunctionCallRequest"</span>, <span class="s">"functions"</span>: [{
+    <span class="s">"id"</span>: <span class="s">"fc_…"</span>, <span class="s">"name"</span>: <span class="s">"navigate_to_website"</span>,
+    <span class="s">"arguments"</span>: <span class="s">"{\"url\":\"google.com\"}"</span>, <span class="s">"client_side"</span>: <span class="k">true</span> }] }
+
+<span class="c">// your code (inside a Webfuse extension) — the hands:</span>
+<span class="k">const</span> r = <span class="k">await</span> browser.webfuseSession.<span class="fn">relocate</span>(url);   <span class="c">// shared tab navigates, live</span>
+
+<span class="c">// …then answer the agent so it can speak the result:</span>
+ws.<span class="fn">send</span>(JSON.<span class="fn">stringify</span>({ <span class="k">"type"</span>: <span class="s">"FunctionCallResponse"</span>, <span class="s">"id"</span>: fn.id,
+  <span class="s">"name"</span>: <span class="s">"navigate_to_website"</span>, <span class="s">"content"</span>: <span class="s">"{\"ok\":true,\"url\":\"…\"}"</span> }));</pre>
+
+      <div class="codehead">Gotchas we hit so you don't have to</div>
+      <table>
+        <tr><th>Gotcha</th><th>What happens / the fix</th></tr>
+        <tr><td>Wrong endpoint</td><td>The agent lives at <code>/v1/agent/converse</code> on <code>agent.deepgram.com</code> — not <code>/v1/agent</code>, not <code>api.deepgram.com</code>. Both of those fail the WS handshake.</td></tr>
+        <tr><td>Browser auth</td><td>No WS headers in browsers. Subprotocol <code>["token", credential]</code> works on both <code>/v1/listen</code> and the converse endpoint.</td></tr>
+        <tr><td>Deepgram-hosted LLM</td><td><code>think-fast</code> is Early Access (contract customers). Managed <code>open_ai / gpt-4o-mini</code> needs no key of yours and works today.</td></tr>
+        <tr><td>Two sample rates</td><td>Mic in at 16 kHz, agent speech out at 24 kHz — one <code>AudioContext</code> has one rate, so playback needs its own.</td></tr>
+        <tr><td>Silence handling</td><td>The socket wants continuous binary frames; KeepAlive alone doesn't finalize a turn (<code>CLIENT_MESSAGE_TIMEOUT</code>). A live mic is fine; test harnesses must keep sending (even silence).</td></tr>
+        <tr><td>Scheme-less URLs</td><td>LLMs happily send <code>"url": "google.com"</code> — normalize before calling <code>relocate()</code>.</td></tr>
+        <tr><td>The refusal tell</td><td>A tool-less voice agent answers “I can't browse the web” — correct behavior, wrong product. Declare the functions; the model will use them.</td></tr>
+      </table>
+    </section>
+
+    <!-- ============ use cases ============ -->
+    <section>
+      <span class="eyebrow blue"><span class="pip"></span>Where this lands in your deployments</span>
+      <h2 class="sec">Voice-agent use cases that need a body</h2>
+      <div class="cards3">
+        <div class="card">
+          <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
+          <h4>Voice commerce</h4>
+          <p>“Order two of those.” The agent hears it, finds the product, fills the cart in the shared browser, and confirms aloud — the customer watches every click.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
+          <h4>Guided support & onboarding</h4>
+          <p>The agent talks the customer through a flow <b>while doing it with them</b> — navigating to the right settings page, pointing by acting, on the customer's real account.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg></div>
+          <h4>High-trust automation</h4>
+          <p>Form filling, claims, applications — anything sensitive: the customer sees exactly what the agent types and can barge in by voice to correct it mid-action.</p>
+        </div>
+      </div>
+      <p class="secsub" style="margin-top:18px">
+        The pattern is the same every time: <b>speech in, action out, witness live.</b> Voice agents
+        stop being phone menus and become colleagues sitting next to the customer.
+      </p>
+    </section>
+
+    <!-- ============ take it ============ -->
+    <section>
+      <div class="callout" style="border:1px solid var(--blue-dim); border-radius:16px; background:linear-gradient(180deg, rgba(77,163,255,0.07), transparent 60%), var(--card); padding:22px 24px; display:flex; gap:16px; align-items:flex-start;">
+        <div style="flex:0 0 auto; width:44px; height:44px; border-radius:12px; display:grid; place-items:center; background:rgba(77,163,255,0.12); color:var(--blue);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        </div>
+        <div>
+          <h3 style="font-size:15.5px; font-weight:800;">Take the whole thing</h3>
+          <p style="color:var(--text-soft); font-size:13.5px; margin-top:5px;">
+            The POC is a public repo: the Webfuse extension (voice agent panel with function
+            calling), a caption-only mode, a token-endpoint reference server, and the engineering
+            guide with every gotcha we hit. Clone it, swap in your Deepgram key, install the
+            extension on a Webfuse Space — <b>~15 minutes to a talking agent that browses with
+            your customer.</b>
+          </p>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:14px;">
+            <a class="btn primary" href="https://github.com/vipin-surfly/webfuse-deepgram">github.com/vipin-surfly/webfuse-deepgram</a>
+            <a class="btn ghost" href="https://github.com/vipin-surfly/webfuse-deepgram/blob/main/GUIDE.md">Engineering guide</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span>Webfuse × Deepgram — FDE field guide</span>
+      <a href="./index.html">The concept</a>
+      <a href="./demo.html">Live demo</a>
+      <a href="https://github.com/vipin-surfly/webfuse-deepgram">GitHub</a>
+      <a href="https://webfuse.com">Webfuse</a>
+      <a href="https://deepgram.com">Deepgram</a>
+    </footer>
+  </div>
+</body>
+</html>

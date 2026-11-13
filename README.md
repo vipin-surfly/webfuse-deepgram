@@ -5,7 +5,8 @@
 
 Real-time speech-to-text for Webfuse sessions:
 
-1. **Demo site** (`site/index.html`, served from GitHub Pages) — live
+1. **Demo site** (`site/index.html` + `site/guide.html` + `site/demo.html`, served from
+   GitHub Pages) — the landing page, the field guide for Deepgram FDEs, and the live demo
    microphone captions (Deepgram Nova-3 streaming) and file transcription
    (pre-recorded REST).
 2. **Token endpoint** (`server.js`) — zero-dependency, self-hostable:
