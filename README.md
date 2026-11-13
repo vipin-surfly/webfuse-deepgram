@@ -1,15 +1,19 @@
-# Deepgram Live Captions
+# Deepgram Voice Agent & Live Captions
 
 <a href="https://webfuse.com"><img src="https://img.shields.io/badge/Webfuse-Extension-3b82f6"></a>
 <a href="https://deepgram.com"><img src="https://img.shields.io/badge/Powered%20by-Deepgram-13EF93?colorB=0d1220"></a>
 
-Put real-time speech-to-text inside every page of a Webfuse session: the
-visitor opens the session link, a floating caption panel appears in the
-corner, and one click starts live captions of their microphone, powered by
-Deepgram Nova-3. Their audio goes straight from their browser to Deepgram —
-only text renders in the session.
+Put a talking AI agent inside every page of a Webfuse session: the visitor
+opens the session link, a floating panel appears in the corner, and one
+click starts a full voice loop — the agent **listens** (Deepgram Nova-3),
+**thinks** (gpt-4o-mini, managed by Deepgram — no extra provider key) and
+**answers out loud** (Deepgram Aura-2 voice), with barge-in when the visitor
+speaks over it. A second button runs **live captions only** (streaming
+STT, no agent). Audio goes straight from each participant's browser to
+Deepgram — only text renders in the session.
 
-> **[Deepgram /v1/listen streaming](https://developers.deepgram.com/docs/live-streaming-audio)**
+> **[Deepgram Voice Agent API](https://developers.deepgram.com/docs/voice-agent)**
+> (`wss://agent.deepgram.com/v1/agent/converse`)
 > + **[Webfuse Spaces & Sessions](https://dev.webfuse.com/spaces-sessions)**
 > + **[Webfuse Extensions](https://dev.webfuse.com/extensions)**
 
@@ -59,10 +63,20 @@ root).
 
 - The panel is a detached Webfuse popup: it floats over every page in the
   session and stays open while the session runs.
+- Two modes: **Talk** starts the voice agent (greeting first, then a spoken
+  conversation with chat-style transcript); **captions only** runs the
+  original live-caption demo.
+- The agent stops speaking the moment the visitor starts talking
+  (barge-in, via `UserStartedSpeaking`).
 - Mic capture happens in each participant's own browser, so every
-  participant can run their own captions.
+  participant runs their own conversation/captions.
 - The panel shows which Webfuse session it is floating in (from
   `browser.webfuseSession.getSessionInfo()`), plus elapsed time and word
   count.
-- Vocabulary boost: `keyterm=Webfuse&keyterm=Deepgram` (Nova-3 keyterm
+- Vocabulary boost: keyterms `Webfuse`, `Deepgram` (Nova-3 keyterm
   prompting) so product names transcribe spelled right.
+- Agent loop verified end-to-end against the real API: greeting spoken,
+  user speech transcribed, LLM reply generated and returned as 24 kHz
+  linear16 audio (see `GUIDE.md` for the protocol notes, including why
+  the endpoint is `/v1/agent/converse` and a second `AudioContext` is
+  needed for playback).
