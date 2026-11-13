@@ -185,6 +185,28 @@ with the same subprotocol credential:
 Verified end-to-end against the live API (greeting + a full
 listen→think→speak turn) — transcript and timings in the repo history.
 
+### 4.1c The hands — function calling
+
+The `Settings` message also declares **client-side functions**. The LLM
+calls them mid-conversation; Deepgram sends a `FunctionCallRequest`
+(`functions[]` with `id`, `name`, JSON-string `arguments`), the popup
+executes and replies `FunctionCallResponse` (`id`, `name`, `content` =
+JSON string). The agent pauses until the response arrives, then speaks
+the result. `FunctionCallCancelled` voids a request if the user barges
+back in — don't answer cancelled ids.
+
+- `navigate_to_website(url)` → `browser.webfuseSession.relocate(url)` —
+  the co-browsed tab navigates live for every participant.
+- `get_current_page()` → last-known URL (from `relocate()` results;
+  `getTabs()` when available) + title (from the `page_info` session
+  event — note it carries no URL, and `tab_relocated` events are not
+  available inside a session).
+
+Verified end-to-end against the live API: user said "Go to website,
+google.com", the LLM emitted `navigate_to_website({"url":"google.com"})`,
+and after the simulated result it confirmed aloud "I've navigated to
+Google." — where the v1.1 prompt had it refuse.
+
 ### 4.2 File transcription
 
 1. Pick (or drop) a file — an `<audio>` preview appears.
@@ -345,6 +367,16 @@ Each of these cost real debugging time; all are fixed or designed around.
     undici's `WebSocket` delivers binary as `Blob` (tests:
     `await ev.data.arrayBuffer()`); a browser popup delivers `ArrayBuffer`
     after `ws.binaryType = "arraybuffer"`.
+15. **LLMs pass scheme-less URLs.** Asked to navigate, gpt-4o-mini sent
+    `"url": "google.com"` — `relocate()` needs a real URL, so the popup
+    prepends `https://` when the scheme is missing.
+16. **A plain LLM refuses to browse.** Without functions, "go to
+    google.com" got "While I can't navigate to websites myself…" — the
+    exact failure that prompted the function-calling work. With the
+    function declared and the prompt saying "never claim you cannot
+    browse", the same request produces a `FunctionCallRequest` and a
+    spoken confirmation. The model's behavior is entirely a matter of
+    what tools you give it.
 
 ---
 

@@ -158,6 +158,10 @@ function addLine(speaker, text) {
   updateStats();
 }
 
+// Last-known page of the co-browsed session. The URL comes from our own
+// relocate() results; the title from the page_info session event.
+const pageCache = { url: null, title: null };
+
 function updateStats() {
   const s = running ? Math.floor((Date.now() - live.startedAt) / 1000) : 0;
   const mm = Math.floor(s / 60), ss = String(s % 60).padStart(2, "0");
@@ -336,10 +340,70 @@ function wireCaptions(token, ctx, stream, node) {
 /* --------------------- agent mode (/v1/agent/converse) ---------------- */
 
 // One WebSocket, full pipeline: listen (Nova-3) → think (gpt-4o-mini,
-// managed by Deepgram — no OpenAI key needed) → speak (Aura-2).
+// managed by Deepgram — no OpenAI key needed) → speak (Aura-2), plus
+// function calling: navigate_to_website / get_current_page are executed
+// against the live co-browsed session via browser.webfuseSession.
 // Flow: Welcome → Settings → SettingsApplied → stream mic PCM;
 // ConversationText events carry both sides of the conversation;
 // binary frames are the agent's speech (linear16 @ 24 kHz).
+
+// calls cancelled by barge-in — do not answer these
+const cancelledCalls = new Set();
+
+// The agent's hands, run in this participant's browser:
+//   navigate_to_website → webfuseSession.relocate(url)
+//   get_current_page    → last-known URL + page_info title (getTabs if available)
+async function execFunction(fn) {
+  let args = {};
+  try { args = JSON.parse(fn.arguments || "{}"); } catch {}
+
+  if (fn.name === "navigate_to_website") {
+    let url = String(args.url || "").trim();
+    if (!url) return { ok: false, error: "no url given" };
+    if (!/^https?:\/\//i.test(url)) url = "https://" + url; // LLMs pass scheme-less URLs
+    const r = await browser.webfuseSession.relocate(url);
+    pageCache.url = (r && r.url) || url;
+    return { ok: true, url: pageCache.url };
+  }
+
+  if (fn.name === "get_current_page") {
+    const info = { url: pageCache.url, title: pageCache.title };
+    try {
+      if (typeof browser.webfuseSession.getTabs === "function") {
+        const tabs = await browser.webfuseSession.getTabs();
+        const active = (tabs || []).find((t) => t && (t.active || t.isActive)) || (tabs || [])[0];
+        if (active) {
+          if (active.url) info.url = active.url;
+          if (active.title) info.title = active.title;
+        }
+      }
+    } catch { /* fall back to the cache */ }
+    return info;
+  }
+
+  return { ok: false, error: `unknown function: ${fn.name}` };
+}
+
+async function runFunction(ws, fn) {
+  setStatus("Acting…", "live");
+  let result;
+  try {
+    result = await execFunction(fn);
+  } catch (e) {
+    result = { ok: false, error: String((e && e.message) || e) };
+  }
+  if (cancelledCalls.has(fn.id)) return; // turn resumed; the call is void
+  const msg = {
+    type: "FunctionCallResponse",
+    id: fn.id,
+    name: fn.name,
+    content: JSON.stringify(result),
+  };
+  if (fn.thought_signature) msg.thought_signature = fn.thought_signature;
+  if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
+  setStatus("Thinking…", "live");
+}
+
 function wireAgent(token, ctx, stream, node) {
   const ws = new WebSocket("wss://agent.deepgram.com/v1/agent/converse", ["token", token]);
   ws.binaryType = "arraybuffer";
@@ -363,7 +427,26 @@ function wireAgent(token, ctx, stream, node) {
       },
       think: {
         provider: { type: "open_ai", model: "gpt-4o-mini", temperature: 0.7 },
-        prompt: "You are a friendly voice agent demoing Webfuse and Deepgram for a proof of concept. Keep answers short (1-3 sentences), speak naturally, and mention Webfuse co-browsing or Deepgram speech AI when relevant.",
+        prompt: "You are a voice agent embedded in a Webfuse co-browsing session: you and the customer share one live browser. Keep answers short (1-3 sentences), speak naturally, and mention Webfuse co-browsing or Deepgram speech AI when relevant. When the user asks to go to, open or visit a website, call navigate_to_website — never claim you cannot browse. After navigating, confirm briefly where you went.",
+        // the agent's hands: client-side functions the LLM can call
+        functions: [
+          {
+            name: "navigate_to_website",
+            description: "Navigate the shared co-browsing session browser to a URL. Use whenever the user asks to go to, open or visit a website or page.",
+            parameters: {
+              type: "object",
+              properties: {
+                url: { type: "string", description: "The URL to open; https:// is added automatically if missing" },
+              },
+              required: ["url"],
+            },
+          },
+          {
+            name: "get_current_page",
+            description: "Get the URL and title of the page currently open in the shared session browser.",
+            parameters: { type: "object", properties: {} },
+          },
+        ],
       },
       speak: {
         provider: { type: "deepgram", version: "v1", model: "aura-2-thalia-en" },
@@ -401,6 +484,15 @@ function wireAgent(token, ctx, stream, node) {
         break;
       case "AgentAudioDone":
         setStatus("Listening", "live");
+        break;
+      case "FunctionCallRequest":
+        // the agent wants to act on the session — run it and reply
+        for (const fn of m.functions || []) {
+          if (fn.client_side !== false) runFunction(ws, fn);
+        }
+        break;
+      case "FunctionCallCancelled":
+        for (const fn of m.functions || []) cancelledCalls.add(fn.id);
         break;
       case "Error":
         showError(m.description || "The agent connection failed.");
@@ -460,6 +552,13 @@ stopBtn.addEventListener("click", stop);
       const info = await browser.webfuseSession.getSessionInfo();
       sessionId = info.sessionId || info.session_id || null;
       updateStats();
+    }
+    // Track the co-browsed page's title (the URL is cached on relocate).
+    if (typeof browser !== "undefined" && browser.webfuseSession?.on) {
+      browser.webfuseSession.on("page_info", (a, b) => {
+        const ev = b && typeof b === "object" ? b : a;
+        if (ev && ev.title) pageCache.title = ev.title;
+      });
     }
   } catch (e) { /* session info is cosmetic — ignore failures */ }
 })();

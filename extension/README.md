@@ -68,6 +68,11 @@ root).
   original live-caption demo.
 - The agent stops speaking the moment the visitor starts talking
   (barge-in, via `UserStartedSpeaking`).
+- **The agent has hands**: it can drive the shared session browser — ask
+  it to "go to any website" and it calls `navigate_to_website`
+  (`browser.webfuseSession.relocate()`) through Deepgram's client-side
+  function calling; `get_current_page` reports where the session is. The
+  navigation happens live in the co-browsed tab everyone is watching.
 - Mic capture happens in each participant's own browser, so every
   participant runs their own conversation/captions.
 - The panel shows which Webfuse session it is floating in (from
