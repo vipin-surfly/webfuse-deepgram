@@ -162,6 +162,69 @@
     td:first-child { color: var(--text); font-weight: 600; white-space: nowrap; }
     code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; background: rgba(232, 237, 245, 0.07); border-radius: 5px; padding: 1px 6px; }
 
+    /* ---- config steps & screen mocks ---- */
+    .config { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 28px; }
+    @media (max-width: 860px) { .config { grid-template-columns: 1fr; } }
+    .steps { display: flex; flex-direction: column; gap: 26px; }
+    .stepblk { border-left: 2px solid var(--border); padding-left: 20px; position: relative; }
+    .stepblk::before {
+      content: ""; position: absolute; left: -7px; top: 2px; width: 12px; height: 12px;
+      border-radius: 50%; background: var(--bg); border: 2px solid var(--blue);
+    }
+    .stepblk.dg::before { border-color: var(--green); }
+    .stepblk .steptag { font-size: 10.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .stepblk.dg .steptag { color: var(--green); }
+    .stepblk.wf .steptag { color: var(--blue); }
+    .stepblk h4 { font-size: 16px; font-weight: 800; margin-top: 3px; }
+    .stepblk p, .stepblk li { color: var(--text-soft); font-size: 13.5px; margin-top: 5px; }
+    .stepblk ul { padding-left: 18px; }
+    .stepblk b { color: var(--text); }
+    .stepblk .pill {
+      display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 10px;
+      margin-top: 8px; border: 1px solid var(--border); color: var(--text-soft);
+    }
+    .shot {
+      border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+      background: #0a0e17; box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+      font-size: 12.5px;
+    }
+    .shot .bar { display: flex; align-items: center; gap: 6px; padding: 9px 12px; background: #0d1320; border-bottom: 1px solid var(--border); }
+    .shot .bar i { width: 9px; height: 9px; border-radius: 50%; background: #2a3550; }
+    .shot .bar .t { margin-left: 8px; font-size: 11px; color: var(--text-soft); font-weight: 600; }
+    .shot .addr { padding: 7px 14px; background: #0d1320; border-bottom: 1px solid var(--border); color: var(--text-soft); font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; }
+    .shot .addr b { color: var(--text); font-weight: 500; }
+    .shot .bd { padding: 16px; }
+    .frow { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(30, 42, 63, 0.6); }
+    .frow:last-child { border-bottom: none; }
+    .frow label { flex: 0 0 150px; font-size: 12px; color: var(--text-soft); font-weight: 600; }
+    .frow .inp {
+      flex: 1; background: #0d1320; border: 1px solid var(--border); border-radius: 7px;
+      padding: 6px 10px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11.5px; color: var(--text);
+    }
+    .frow .inp.hint { color: var(--text-soft); }
+    .frow select.inp { font-family: inherit; }
+    .shot .btnrow { display: flex; gap: 8px; margin-top: 12px; }
+    .shot .sbtn { border-radius: 7px; padding: 6px 14px; font-size: 12px; font-weight: 700; }
+    .shot .sbtn.p { background: var(--blue); color: #04121f; border: none; }
+    .shot .sbtn.g { background: transparent; border: 1px solid var(--border); color: var(--text-soft); }
+    .shot .note { font-size: 11.5px; color: var(--text-soft); padding: 8px 12px; background: rgba(77, 163, 255, 0.05); border: 1px solid var(--blue-dim); border-radius: 8px; margin-top: 12px; }
+    .shot .note.dg { background: rgba(46, 230, 168, 0.05); border-color: var(--green-dim); }
+    .shot .note b { color: var(--text); }
+    .shot .list { display: flex; flex-direction: column; }
+    .shot .list .li { display: flex; justify-content: space-between; align-items: center; padding: 9px 4px; border-bottom: 1px solid rgba(30, 42, 63, 0.6); }
+    .shot .list .li:last-child { border-bottom: none; }
+    .shot .list .li .nm { font-weight: 700; font-size: 12.5px; }
+    .shot .list .li .sub { display: block; font-size: 11px; color: var(--text-soft); font-weight: 400; margin-top: 1px; }
+    .shot .badge { font-size: 10px; font-weight: 700; border-radius: 999px; padding: 2px 9px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .shot .badge.on { background: rgba(46, 230, 168, 0.12); color: var(--green); }
+    .shot .badge.off { background: rgba(232, 237, 245, 0.07); color: var(--text-soft); }
+    .warn {
+      border: 1px solid #6b4f18; border-radius: 14px; margin-top: 18px; padding: 14px 18px;
+      background: rgba(217, 119, 6, 0.06); color: var(--text-soft); font-size: 13.5px;
+    }
+    .warn b { color: #e8b96a; }
+    .warn code { background: rgba(232, 237, 245, 0.05); }
+
     footer { margin: 46px 0 30px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--text-soft); font-size: 12.5px; }
     footer a { color: var(--text-soft); text-decoration: none; }
     footer a:hover { color: var(--text); }
@@ -385,6 +448,221 @@ ws.<span class="fn">send</span>(JSON.<span class="fn">stringify</span>({ <span c
       </table>
     </section>
 
+    <!-- ============ configuration ============ -->
+    <section id="configure">
+      <span class="eyebrow blue"><span class="pip"></span>Set it up — the 15-minute path</span>
+      <h2 class="sec">Configuration: Deepgram + Webfuse Studio</h2>
+      <p class="secsub">
+        Everything below is the exact configuration this POC runs on. Five minutes on the
+        Deepgram side, ten in Webfuse Studio — then open a session and talk. Screens are rendered
+        recreations; the field values are real.
+      </p>
+
+      <div class="config">
+        <div class="steps">
+
+          <div class="stepblk dg">
+            <span class="steptag">Deepgram · step 1</span>
+            <h4>Create an API key</h4>
+            <p>In the <b>Deepgram Console → API Keys → Create a New API Key</b>. This is the only
+              Deepgram-side configuration there is — Nova-3, Aura-2 and the managed
+              gpt-4o-mini brain need no enablement or separate keys.</p>
+            <ul>
+              <li><b>POC:</b> any key works.</li>
+              <li><b>Production:</b> a <b>Member-permission</b> key — only those can mint
+                short-lived grants via <code>POST /v1/auth/grant</code>. (Regular keys get
+                <code>403 FORBIDDEN</code> there — we hit exactly that.)</li>
+              <li>Deepgram's own hosted LLM (<code>think-fast</code>) needs Early Access
+                enrollment; you don't need it — the managed OpenAI brain ships today.</li>
+            </ul>
+            <span class="pill">~5 min · console.deepgram.com</span>
+          </div>
+
+          <div class="stepblk wf">
+            <span class="steptag">Webfuse Studio · step 2</span>
+            <h4>Create a Space</h4>
+            <p><b>Studio → Spaces → New Space</b>. The Space is the container whose sessions get
+              the extension. Choose type <b>Meeting</b> so you and the customer join the same
+              live browser.</p>
+            <ul>
+              <li><b>Meeting</b> — everyone lands in one shared session. Right choice for demos
+                and co-browsing with a customer.</li>
+              <li><b>Solo</b> — private virtual browser; use for automated agents.</li>
+            </ul>
+            <span class="pill">~1 min</span>
+          </div>
+
+          <div class="stepblk wf">
+            <span class="steptag">Webfuse Studio · step 3</span>
+            <h4>Install the extension from GitHub</h4>
+            <p><b>Studio → your Space → Extensions → Install from GitHub</b>, with the values on
+              the right. The <code>extension</code> ref is a branch where <code>manifest.json</code>
+              sits at the root — Webfuse's importer requires that (a repo subpath fails with
+              “missing manifest.json”); the repo's workflow keeps the branch in sync.</p>
+            <span class="pill">~2 min</span>
+          </div>
+
+          <div class="stepblk wf">
+            <span class="steptag">Webfuse Studio · step 4</span>
+            <h4>Configure the credential</h4>
+            <p><b>Studio → your Space → Extensions → Deepgram Live Captions → settings</b>.
+              Exactly one of the two settings:</p>
+            <ul>
+              <li><b>POC:</b> paste the Step-1 key into <code>DEEPGRAM_API_KEY</code>. It travels
+                from each participant's browser straight to Deepgram — fine for a demo key.</li>
+              <li><b>Production:</b> leave it empty and set <code>TOKEN_URL</code> to your
+                hosted <code>server.js</code> (<code>https://your-host/api/token</code>), which
+                keeps the Member key server-side and mints short-lived grants.</li>
+            </ul>
+            <span class="pill">~2 min</span>
+          </div>
+
+          <div class="stepblk wf">
+            <span class="steptag">Webfuse Studio · step 5 · optional</span>
+            <h4>Set the session startup page</h4>
+            <p><b>Studio → your Space → Session settings → startup page → custom URL</b> —
+              point it at the POC landing page so every session opens on the story, with the
+              panel floating over it.</p>
+            <span class="pill">~1 min</span>
+          </div>
+
+          <div class="stepblk dg">
+            <span class="steptag">Run it</span>
+            <h4>Open a session and talk</h4>
+            <p>Open the Space's <b>session link</b> (the <code>webfu.se/+space</code> URL).
+              The panel floats bottom-right. Click <b>Talk</b>: the agent greets you out loud.
+              Say <b>“go to google.com”</b> — the shared tab navigates and the agent confirms.
+              A new session is needed after any extension change; extensions load at session
+              start.</p>
+            <span class="pill">verify: greeting → speak → navigation</span>
+          </div>
+
+        </div>
+
+        <div class="steps">
+          <div class="shot">
+            <div class="bar"><i></i><i></i><i></i><span class="t">Deepgram Console — API Keys</span></div>
+            <div class="addr"><b>console.deepgram.com</b>/api-keys</div>
+            <div class="bd">
+              <div class="list">
+                <div class="li">
+                  <span class="nm">poc-demo-key<span class="sub">created today · project: FDE demos</span></span>
+                  <span class="badge on">copy</span>
+                </div>
+                <div class="li">
+                  <span class="nm">member-grant-key<span class="sub">permissions: Member — can mint /v1/auth/grant</span></span>
+                  <span class="badge on">copy</span>
+                </div>
+              </div>
+              <div class="frow"><label>Key name</label><div class="inp">webfuse-poc</div></div>
+              <div class="frow"><label>Permission</label><div class="inp">Member (required for grants — production)</div></div>
+              <div class="frow"><label>Scope</label><div class="inp hint">all projects</div></div>
+              <div class="btnrow"><span class="sbtn p">Create Key</span><span class="sbtn g">Cancel</span></div>
+              <div class="note dg"><b>No other enablement:</b> nova-3 (listen), aura-2 (speak) and managed
+                gpt-4o-mini (think) are on by default. <b>think-fast</b> is the only Early Access item — skip it.</div>
+            </div>
+          </div>
+
+          <div class="shot">
+            <div class="bar"><i></i><i></i><i></i><span class="t">Webfuse Studio — New Space</span></div>
+            <div class="addr"><b>app.webfuse.com</b>/spaces/new</div>
+            <div class="bd">
+              <div class="frow"><label>Space name</label><div class="inp">Deepgram Voice Agent</div></div>
+              <div class="frow"><label>Type</label><div class="inp">Meeting — everyone joins one live session</div></div>
+              <div class="frow"><label>Visibility</label><div class="inp">Members only</div></div>
+              <div class="frow"><label>Automation</label><div class="inp">Enabled — Session MCP + ak_ key (default)</div></div>
+              <div class="btnrow"><span class="sbtn p">Create Space</span></div>
+            </div>
+          </div>
+
+          <div class="shot">
+            <div class="bar"><i></i><i></i><i></i><span class="t">Webfuse Studio — Install Extension</span></div>
+            <div class="addr"><b>app.webfuse.com</b>/spaces/deepgram-voice-agent/extensions</div>
+            <div class="bd">
+              <div class="frow"><label>Source</label><div class="inp">GitHub repository</div></div>
+              <div class="frow"><label>Repository URL</label><div class="inp">https://github.com/vipin-surfly/webfuse-deepgram</div></div>
+              <div class="frow"><label>Ref / branch</label><div class="inp">extension</div></div>
+              <div class="frow"><label>Name</label><div class="inp">Deepgram Live Captions</div></div>
+              <div class="btnrow"><span class="sbtn p">Install</span></div>
+              <div class="note"><b>Why the <code>extension</code> branch:</b> the importer needs
+                <code>manifest.json</code> at the ref's root — a subpath like
+                <code>/tree/main/extension</code> fails. The repo's GitHub Action mirrors
+                <code>extension/</code> to that branch on every push.</div>
+            </div>
+          </div>
+
+          <div class="shot">
+            <div class="bar"><i></i><i></i><i></i><span class="t">Extension settings — Deepgram Live Captions</span></div>
+            <div class="addr"><b>app.webfuse.com</b>/spaces/deepgram-voice-agent/extensions/settings</div>
+            <div class="bd">
+              <div class="frow"><label>DEEPGRAM_API_KEY</label><div class="inp">1c62••••••••••••••••••••••f350 <span style="color:var(--text-soft)">— POC mode</span></div></div>
+              <div class="frow"><label>TOKEN_URL</label><div class="inp hint">https://your-host/api/token — production mode</div></div>
+              <div class="btnrow"><span class="sbtn p">Save</span></div>
+              <div class="note"><b>One or the other:</b> the panel checks
+                <code>DEEPGRAM_API_KEY</code> first, then <code>TOKEN_URL</code>. The POC key is
+                readable by session participants from devtools — rotate it, or go production:
+                host <code>server.js</code> from the repo with a Member key in its env.</div>
+            </div>
+          </div>
+
+          <div class="shot">
+            <div class="bar"><i></i><i></i><i></i><span class="t">Session settings — startup page</span></div>
+            <div class="addr"><b>app.webfuse.com</b>/spaces/deepgram-voice-agent/settings</div>
+            <div class="bd">
+              <div class="frow"><label>Startup page action</label><div class="inp">Custom pages</div></div>
+              <div class="frow"><label>Custom URL</label><div class="inp">https://vipin-surfly.github.io/webfuse-deepgram/</div></div>
+              <div class="btnrow"><span class="sbtn p">Save</span></div>
+              <div class="note"><b>Optional:</b> every session then opens on the agent-anatomy
+                pitch page with the panel floating over it — a self-running demo.</div>
+            </div>
+          </div>
+
+          <div class="shot">
+            <div class="bar"><i></i><i></i><i></i><span class="t">Live session — first exchange</span></div>
+            <div class="addr"><b>webfu.se</b>/+deepgram-voice-agent</div>
+            <div class="bd">
+              <div class="list">
+                <div class="li"><span class="nm">🟢 Voice Agent panel<span class="sub">status: Listening · POC key</span></span><span class="badge on">floating</span></div>
+                <div class="li"><span class="nm">“Hello! I am the Webfuse and Deepgram demo agent…”<span class="sub">agent · greeting · Aura-2 voice</span></span><span class="badge on">audio</span></div>
+                <div class="li"><span class="nm">“Go to website, google.com.”<span class="sub">you · Nova-3 with keyterms</span></span><span class="badge on">heard</span></div>
+                <div class="li"><span class="nm">navigate_to_website → relocate()<span class="sub">shared tab navigates, live, for everyone</span></span><span class="badge on">acted</span></div>
+                <div class="li"><span class="nm">“I've navigated to Google…”<span class="sub">agent · confirms aloud</span></span><span class="badge on">audio</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="warn">
+        <b>The one trap we hit repeatedly:</b> installing an extension (or a new version of it)
+        on a Space creates a <b>new entry</b> — settings do <b>not</b> carry over. After any
+        reinstall: paste the key into the <b>newest</b> entry, <b>delete the old ones</b>, and
+        start a <b>new session</b> (extensions load at session start). Symptom if you skip this:
+        several panels floating, or “No credential configured”.
+      </div>
+
+      <div class="codehead" style="margin-top:26px">POC vs production at a glance</div>
+      <table>
+        <tr><th></th><th>POC — one afternoon</th><th>Production</th></tr>
+        <tr><td>Credential setting</td><td><code>DEEPGRAM_API_KEY</code> — key pasted in Studio</td><td><code>TOKEN_URL</code> — your hosted <code>server.js</code></td></tr>
+        <tr><td>Deepgram key type</td><td>Any key</td><td>Member-permission key (can mint grants)</td></tr>
+        <tr><td>Who can read the key</td><td>Session participants (devtools) — use a demo key, rotate it</td><td>Nobody — short-lived grants, key stays server-side</td></tr>
+        <tr><td>Panel badge</td><td>“POC key” (amber)</td><td>“temp token” (green)</td></tr>
+        <tr><td>Anything else to change?</td><td>No</td><td>No — the panel switches modes by what the endpoint returns</td></tr>
+      </table>
+
+      <div class="codehead" style="margin-top:26px">If it doesn't work</div>
+      <table>
+        <tr><th>Symptom</th><th>Cause → fix</th></tr>
+        <tr><td>“No credential configured”</td><td>Key not set on the <b>current</b> extension entry → check Step 4, mind the reinstall trap above</td></tr>
+        <tr><td>Multiple panels floating</td><td>Several extension versions installed → delete all but the newest in Studio</td></tr>
+        <tr><td>Agent talks but won't navigate</td><td>Session started before the extension update, or the installed version &lt; 1.2 → new session, newest entry</td></tr>
+        <tr><td>Panel error + silent, console shows close 1006</td><td>Wrong endpoint in a fork — must be <code>wss://agent.deepgram.com/v1/agent/converse</code></td></tr>
+        <tr><td>403 FORBIDDEN on <code>/v1/auth/grant</code></td><td>Key lacks Member permission → create a Member key (production mode only needs this)</td></tr>
+        <tr><td>Agent answers but you hear nothing</td><td>Two <code>AudioContext</code>s are required (16 kHz mic / 24 kHz playback) in forks — see the repo's <code>popup.js</code></td></tr>
+      </table>
+    </section>
+
     <!-- ============ use cases ============ -->
     <section>
       <span class="eyebrow blue"><span class="pip"></span>Where this lands in your deployments</span>
@@ -429,6 +707,7 @@ ws.<span class="fn">send</span>(JSON.<span class="fn">stringify</span>({ <span c
           </p>
           <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:14px;">
             <a class="btn primary" href="https://github.com/vipin-surfly/webfuse-deepgram">github.com/vipin-surfly/webfuse-deepgram</a>
+            <a class="btn ghost" href="#configure">Set it up in 15 minutes</a>
             <a class="btn ghost" href="https://github.com/vipin-surfly/webfuse-deepgram/blob/main/GUIDE.md">Engineering guide</a>
           </div>
         </div>
